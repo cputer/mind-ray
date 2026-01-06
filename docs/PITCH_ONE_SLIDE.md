@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 10:00:48
+**Auto-generated**: 2026-01-06 10:27:59
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
