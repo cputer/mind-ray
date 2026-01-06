@@ -4,7 +4,7 @@
 # HARD-FAIL: Exits with code 1 if no engines ran or no results captured
 
 param(
-    [string]$Scene = "stress",
+    [string]$Scenes = "stress",
     [int]$Width = 640,
     [int]$Height = 360,
     [int]$Spp = 64,
@@ -17,7 +17,14 @@ param(
     [string]$Engines = ""
 )
 
-# Parse SphereCounts from comma-separated string
+# Parse Scenes from comma-separated string
+$ScenesArray = $Scenes -split ',' | ForEach-Object { $_.Trim().ToLower() }
+if ($ScenesArray.Count -eq 0) {
+    Write-Host "HARD-FAIL: No valid scenes specified" -ForegroundColor Red
+    exit 1
+}
+
+# Parse SphereCounts from comma-separated string (only used for stress scene)
 $SphereCountsArray = $SphereCounts -split ',' | ForEach-Object { [int]$_.Trim() }
 
 # Validate sphere counts
@@ -42,11 +49,11 @@ Write-Host "   TIER BP (PERSISTENT) BENCHMARK" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Parameters:"
-Write-Host "  Scene: $Scene"
+Write-Host "  Scenes: $($ScenesArray -join ', ')"
 Write-Host "  Resolution: ${Width}x${Height}"
 Write-Host "  SPP: $Spp"
 Write-Host "  Bounces: $Bounces"
-Write-Host "  Sphere counts: $($SphereCountsArray -join ', ')"
+Write-Host "  Sphere counts (stress): $($SphereCountsArray -join ', ')"
 Write-Host "  Warmup frames: $Warmup"
 Write-Host "  Total frames: $Frames"
 Write-Host "  Measure frames: $($Frames - $Warmup)"
@@ -121,94 +128,107 @@ $enginesExecuted = @()
 $rawLogsCreated = @()
 $allResults = @()
 
-# Run benchmarks
-foreach ($spheres in $SphereCountsArray) {
+# Run benchmarks - loop over scenes
+foreach ($currentScene in $ScenesArray) {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "  Sphere Count: $spheres" -ForegroundColor Cyan
+    Write-Host "  Scene: $currentScene" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
 
-    foreach ($engine in $availableEngines) {
-        Write-Host ""
-        Write-Host "--- $($engine.name) ---" -ForegroundColor Yellow
+    # For stress scene, iterate over sphere counts
+    # For other scenes (spheres, cornell), use fixed sphere count of 0
+    $sphereList = if ($currentScene -eq "stress") { $SphereCountsArray } else { @(0) }
 
-        $engineResultsDir = "$RESULTS_DIR\$($engine.id)"
-        if (!(Test-Path $engineResultsDir)) {
-            New-Item -ItemType Directory -Path $engineResultsDir -Force | Out-Null
+    foreach ($spheres in $sphereList) {
+        if ($currentScene -eq "stress") {
+            Write-Host ""
+            Write-Host "  --- $spheres spheres ---" -ForegroundColor Yellow
         }
 
-        $coldStarts = @()
-        $steadyMedians = @()
-        $steadyP95s = @()
+        foreach ($engine in $availableEngines) {
+            Write-Host ""
+            Write-Host "  Engine: $($engine.name)" -ForegroundColor Yellow
 
-        # Measured runs
-        for ($i = 1; $i -le $Runs; $i++) {
-            Write-Host "  Run $i/$Runs..."
-
-            $logFile = "$engineResultsDir\${Scene}_n${spheres}_run${i}_$TIMESTAMP.txt"
-            try {
-                $output = & $engine.run_script -Scene $Scene -Width $Width -Height $Height -Spp $Spp -Bounces $Bounces -Spheres $spheres -Warmup $Warmup -Frames $Frames 2>&1
-                $output | Out-File -FilePath $logFile -Encoding UTF8
-                $rawLogsCreated += $logFile
-
-                # Parse metrics
-                $deviceName = ""
-                foreach ($line in $output) {
-                    if ($line -match "COLD_START_MS=([\d.]+)") {
-                        $coldStarts += [double]$Matches[1]
-                    }
-                    if ($line -match "STEADY_MS_PER_FRAME=([\d.]+)") {
-                        $steadyMedians += [double]$Matches[1]
-                    }
-                    if ($line -match "STEADY_P95_MS=([\d.]+)") {
-                        $steadyP95s += [double]$Matches[1]
-                    }
-                    if ($line -match "^DEVICE_NAME=(.+)$") {
-                        $deviceName = $Matches[1]
-                    }
-                }
-
-                if ($coldStarts.Count -eq $i) {
-                    Write-Host "    COLD_START_MS: $($coldStarts[-1])ms  STEADY: $($steadyMedians[-1])ms  P95: $($steadyP95s[-1])ms" -ForegroundColor Cyan
-                }
-            } catch {
-                Write-Host "  ERROR: Run failed: $_" -ForegroundColor Red
+            $engineResultsDir = "$RESULTS_DIR\$($engine.id)"
+            if (!(Test-Path $engineResultsDir)) {
+                New-Item -ItemType Directory -Path $engineResultsDir -Force | Out-Null
             }
 
-            # Cooldown between runs
-            if ($i -lt $Runs) {
-                Start-Sleep -Seconds $CooldownSec
-            }
-        }
+            $coldStarts = @()
+            $steadyMedians = @()
+            $steadyP95s = @()
 
-        # Calculate statistics (median of medians, etc.)
-        if ($coldStarts.Count -gt 0 -and $steadyMedians.Count -gt 0) {
-            $sortedCold = $coldStarts | Sort-Object
-            $sortedSteady = $steadyMedians | Sort-Object
-            $sortedP95 = $steadyP95s | Sort-Object
+            # Measured runs
+            for ($i = 1; $i -le $Runs; $i++) {
+                Write-Host "    Run $i/$Runs..."
 
-            $medianCold = $sortedCold[[math]::Floor($sortedCold.Count / 2)]
-            $medianSteady = $sortedSteady[[math]::Floor($sortedSteady.Count / 2)]
-            $medianP95 = $sortedP95[[math]::Floor($sortedP95.Count / 2)]
+                $logFileName = if ($currentScene -eq "stress") { "${currentScene}_n${spheres}_run${i}_$TIMESTAMP.txt" } else { "${currentScene}_run${i}_$TIMESTAMP.txt" }
+                $logFile = "$engineResultsDir\$logFileName"
+                try {
+                    $output = & $engine.run_script -Scene $currentScene -Width $Width -Height $Height -Spp $Spp -Bounces $Bounces -Spheres $spheres -Warmup $Warmup -Frames $Frames 2>&1
+                    $output | Out-File -FilePath $logFile -Encoding UTF8
+                    $rawLogsCreated += $logFile
 
-            if ($medianCold -gt 0 -and $medianSteady -gt 0) {
-                $allResults += @{
-                    engine_id = $engine.id
-                    engine_name = $engine.name
-                    spheres = $spheres
-                    cold_start_ms = $medianCold
-                    steady_ms = $medianSteady
-                    steady_p95_ms = $medianP95
-                    runs = $coldStarts.Count
-                    device_name = $deviceName
+                    # Parse metrics
+                    $deviceName = ""
+                    foreach ($line in $output) {
+                        if ($line -match "COLD_START_MS=([\d.]+)") {
+                            $coldStarts += [double]$Matches[1]
+                        }
+                        if ($line -match "STEADY_MS_PER_FRAME=([\d.]+)") {
+                            $steadyMedians += [double]$Matches[1]
+                        }
+                        if ($line -match "STEADY_P95_MS=([\d.]+)") {
+                            $steadyP95s += [double]$Matches[1]
+                        }
+                        if ($line -match "^DEVICE_NAME=(.+)$") {
+                            $deviceName = $Matches[1]
+                        }
+                    }
+
+                    if ($coldStarts.Count -eq $i) {
+                        Write-Host "      COLD=$($coldStarts[-1])ms STEADY=$($steadyMedians[-1])ms P95=$($steadyP95s[-1])ms" -ForegroundColor Cyan
+                    }
+                } catch {
+                    Write-Host "    ERROR: Run failed: $_" -ForegroundColor Red
                 }
-                $enginesExecuted += $engine.id
-                Write-Host "  Result: COLD=$([math]::Round($medianCold, 2))ms STEADY=$([math]::Round($medianSteady, 2))ms P95=$([math]::Round($medianP95, 2))ms" -ForegroundColor Green
+
+                # Cooldown between runs
+                if ($i -lt $Runs) {
+                    Start-Sleep -Seconds $CooldownSec
+                }
+            }
+
+            # Calculate statistics (median of medians, etc.)
+            if ($coldStarts.Count -gt 0 -and $steadyMedians.Count -gt 0) {
+                $sortedCold = $coldStarts | Sort-Object
+                $sortedSteady = $steadyMedians | Sort-Object
+                $sortedP95 = $steadyP95s | Sort-Object
+
+                $medianCold = $sortedCold[[math]::Floor($sortedCold.Count / 2)]
+                $medianSteady = $sortedSteady[[math]::Floor($sortedSteady.Count / 2)]
+                $medianP95 = $sortedP95[[math]::Floor($sortedP95.Count / 2)]
+
+                if ($medianCold -gt 0 -and $medianSteady -gt 0) {
+                    $allResults += @{
+                        engine_id = $engine.id
+                        engine_name = $engine.name
+                        scene = $currentScene
+                        spheres = $spheres
+                        cold_start_ms = $medianCold
+                        steady_ms = $medianSteady
+                        steady_p95_ms = $medianP95
+                        runs = $coldStarts.Count
+                        device_name = $deviceName
+                    }
+                    $enginesExecuted += $engine.id
+                    Write-Host "    Result: COLD=$([math]::Round($medianCold, 2))ms STEADY=$([math]::Round($medianSteady, 2))ms P95=$([math]::Round($medianP95, 2))ms" -ForegroundColor Green
+                } else {
+                    Write-Host "    ERROR: Invalid timing values (must be > 0)" -ForegroundColor Red
+                }
             } else {
-                Write-Host "  ERROR: Invalid timing values (must be > 0)" -ForegroundColor Red
+                Write-Host "    ERROR: No timing data captured" -ForegroundColor Red
             }
-        } else {
-            Write-Host "  ERROR: No timing data captured" -ForegroundColor Red
         }
     }
 }
@@ -242,6 +262,8 @@ Write-Host "========================================" -ForegroundColor Cyan
 $reportFile = "$BENCH_DIR\results\TIER_BP_$TIMESTAMP.md"
 $gpuName = & nvidia-smi --query-gpu=name --format=csv,noheader 2>$null
 
+$scenesRun = ($allResults | Select-Object -ExpandProperty scene -Unique) -join ", "
+
 $reportContent = @"
 # Mind-Ray Tier BP (Persistent) Benchmark Results
 
@@ -251,14 +273,19 @@ $reportContent = @"
 
 ---
 
-## Methodology
+## Steady-State Definition
 
-**Tier BP measures persistent performance:**
-- **COLD_START_MS**: Time from process start to first frame complete
-- **STEADY_MS_PER_FRAME**: Median per-frame time after warmup
-- **STEADY_P95_MS**: 95th percentile per-frame time after warmup
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| **Warmup Frames** | $Warmup | Excluded from measurement |
+| **Measurement Frames** | $($Frames - $Warmup) | Included in STEADY_MS_PER_FRAME |
+| **Total Frames** | $Frames | Per run |
+| **I/O During Steady** | Disabled | No image write during measurement |
+| **Context** | Persistent | CUDA context / Python runtime kept alive |
 
-Both engines keep their runtime (CUDA context / Python+Mitsuba) alive across all frames.
+**STEADY_MS_PER_FRAME** = median per-frame render time over measurement window (frames $($Warmup+1)-$Frames).
+
+**Speedups are computed from STEADY_MS_PER_FRAME medians only.**
 
 ---
 
@@ -269,84 +296,154 @@ Both engines keep their runtime (CUDA context / Python+Mitsuba) alive across all
 | Resolution | ${Width}x${Height} |
 | SPP | $Spp |
 | Bounces | $Bounces |
-| Warmup Frames | $Warmup |
-| Measure Frames | $($Frames - $Warmup) |
-| Total Frames | $Frames |
-| Runs | $Runs |
+| Scenes | $scenesRun |
+| Runs per config | $Runs |
 | Cooldown | ${CooldownSec}s |
-| Scene | $Scene |
 
 ---
 
-## Results (Median of $Runs runs)
-
-| Engine | Spheres | Cold Start (ms) | Steady (ms/frame) | P95 (ms) | Steady Speedup |
-|--------|---------|-----------------|-------------------|----------|----------------|
 "@
 
-# Group results by spheres for speedup calculation
-$sphereGroups = $allResults | Group-Object -Property spheres
+# Generate per-scene results
+$sceneGroups = $allResults | Group-Object -Property scene
 
-foreach ($group in $sphereGroups) {
-    $sphereResults = $group.Group
+foreach ($sceneGroup in $sceneGroups) {
+    $currentScene = $sceneGroup.Name
+    $sceneResults = $sceneGroup.Group
 
-    # Find Mitsuba steady time for speedup calculation
-    $mitsubaResult = $sphereResults | Where-Object { $_.engine_name -eq "Mitsuba 3" } | Select-Object -First 1
-    $mitsubaSteady = if ($mitsubaResult) { $mitsubaResult.steady_ms } else { 0 }
+    $reportContent += @"
+## Results: $($currentScene.ToUpper()) Scene
 
-    foreach ($result in $sphereResults) {
-        $speedup = if ($mitsubaSteady -gt 0 -and $result.steady_ms -gt 0) {
-            [math]::Round($mitsubaSteady / $result.steady_ms, 2)
-        } else {
-            "N/A"
+| Engine | Config | Cold Start (ms) | Steady (ms/frame) | P95 (ms) | Steady Speedup |
+|--------|--------|-----------------|-------------------|----------|----------------|
+"@
+
+    # Group by spheres within scene
+    $configGroups = $sceneResults | Group-Object -Property spheres
+
+    foreach ($configGroup in $configGroups) {
+        $configResults = $configGroup.Group
+        $sphereCount = $configGroup.Name
+
+        # Find Mitsuba steady time for speedup calculation
+        $mitsubaResult = $configResults | Where-Object { $_.engine_name -eq "Mitsuba 3" } | Select-Object -First 1
+        $mitsubaSteady = if ($mitsubaResult) { $mitsubaResult.steady_ms } else { 0 }
+
+        foreach ($result in $configResults) {
+            $speedup = if ($mitsubaSteady -gt 0 -and $result.steady_ms -gt 0) {
+                [math]::Round($mitsubaSteady / $result.steady_ms, 2)
+            } else {
+                "N/A"
+            }
+
+            if ($result.engine_name -eq "Mitsuba 3") {
+                $speedup = "1.00x"
+            } else {
+                $speedup = "**${speedup}x**"
+            }
+
+            $configLabel = if ($currentScene -eq "stress") { "$sphereCount spheres" } else { "-" }
+            $reportContent += "`n| $($result.engine_name) | $configLabel | $([math]::Round($result.cold_start_ms, 2)) | $([math]::Round($result.steady_ms, 2)) | $([math]::Round($result.steady_p95_ms, 2)) | $speedup |"
         }
-
-        # Mitsuba is baseline (1.00x)
-        if ($result.engine_name -eq "Mitsuba 3") {
-            $speedup = "1.00x"
-        } else {
-            $speedup = "**${speedup}x**"
-        }
-
-        $reportContent += "`n| $($result.engine_name) | $($result.spheres) | $([math]::Round($result.cold_start_ms, 2)) | $([math]::Round($result.steady_ms, 2)) | $([math]::Round($result.steady_p95_ms, 2)) | $speedup |"
     }
+
+    $reportContent += "`n`n---`n`n"
 }
 
 $reportContent += @"
-
-
----
-
 ## Cold Start Comparison
 
-| Engine | Spheres | Cold Start (ms) | Cold Start Speedup |
-|--------|---------|-----------------|-------------------|
+| Engine | Scene | Config | Cold Start (ms) | Cold Start Speedup |
+|--------|-------|--------|-----------------|-------------------|
 "@
 
-foreach ($group in $sphereGroups) {
-    $sphereResults = $group.Group
-    $mitsubaResult = $sphereResults | Where-Object { $_.engine_name -eq "Mitsuba 3" } | Select-Object -First 1
-    $mitsubaCold = if ($mitsubaResult) { $mitsubaResult.cold_start_ms } else { 0 }
+# Group by scene and then config for cold start comparison
+foreach ($sceneGroup in $sceneGroups) {
+    $currentScene = $sceneGroup.Name
+    $sceneResults = $sceneGroup.Group
 
-    foreach ($result in $sphereResults) {
-        $speedup = if ($mitsubaCold -gt 0 -and $result.cold_start_ms -gt 0) {
-            [math]::Round($mitsubaCold / $result.cold_start_ms, 2)
-        } else {
-            "N/A"
+    # Group by spheres within scene
+    $configGroups = $sceneResults | Group-Object -Property spheres
+
+    foreach ($configGroup in $configGroups) {
+        $configResults = $configGroup.Group
+        $sphereCount = $configGroup.Name
+
+        # Find Mitsuba cold start time for speedup calculation
+        $mitsubaResult = $configResults | Where-Object { $_.engine_name -eq "Mitsuba 3" } | Select-Object -First 1
+        $mitsubaCold = if ($mitsubaResult) { $mitsubaResult.cold_start_ms } else { 0 }
+
+        foreach ($result in $configResults) {
+            $speedup = if ($mitsubaCold -gt 0 -and $result.cold_start_ms -gt 0) {
+                [math]::Round($mitsubaCold / $result.cold_start_ms, 2)
+            } else {
+                "N/A"
+            }
+
+            if ($result.engine_name -eq "Mitsuba 3") {
+                $speedup = "1.00x"
+            } else {
+                $speedup = "**${speedup}x**"
+            }
+
+            $configLabel = if ($currentScene -eq "stress") { "$sphereCount spheres" } else { "-" }
+            $reportContent += "`n| $($result.engine_name) | $currentScene | $configLabel | $([math]::Round($result.cold_start_ms, 2)) | $speedup |"
         }
-
-        if ($result.engine_name -eq "Mitsuba 3") {
-            $speedup = "1.00x"
-        } else {
-            $speedup = "**${speedup}x**"
-        }
-
-        $reportContent += "`n| $($result.engine_name) | $($result.spheres) | $([math]::Round($result.cold_start_ms, 2)) | $speedup |"
     }
+}
+
+# Calculate geomean speedups
+$steadySpeedups = @()
+$coldSpeedups = @()
+
+foreach ($sceneGroup in $sceneGroups) {
+    $sceneResults = $sceneGroup.Group
+    $configGroups = $sceneResults | Group-Object -Property spheres
+
+    foreach ($configGroup in $configGroups) {
+        $configResults = $configGroup.Group
+        $mitsubaResult = $configResults | Where-Object { $_.engine_name -eq "Mitsuba 3" } | Select-Object -First 1
+        $mindrayResult = $configResults | Where-Object { $_.engine_name -eq "Mind-Ray" } | Select-Object -First 1
+
+        if ($mitsubaResult -and $mindrayResult) {
+            if ($mitsubaResult.steady_ms -gt 0 -and $mindrayResult.steady_ms -gt 0) {
+                $steadySpeedups += $mitsubaResult.steady_ms / $mindrayResult.steady_ms
+            }
+            if ($mitsubaResult.cold_start_ms -gt 0 -and $mindrayResult.cold_start_ms -gt 0) {
+                $coldSpeedups += $mitsubaResult.cold_start_ms / $mindrayResult.cold_start_ms
+            }
+        }
+    }
+}
+
+# Geomean calculation
+$steadyGeomean = 0.0
+$coldGeomean = 0.0
+
+if ($steadySpeedups.Count -gt 0) {
+    $logSum = 0
+    foreach ($s in $steadySpeedups) { $logSum += [math]::Log($s) }
+    $steadyGeomean = [math]::Exp($logSum / $steadySpeedups.Count)
+}
+
+if ($coldSpeedups.Count -gt 0) {
+    $logSum = 0
+    foreach ($s in $coldSpeedups) { $logSum += [math]::Log($s) }
+    $coldGeomean = [math]::Exp($logSum / $coldSpeedups.Count)
 }
 
 $reportContent += @"
 
+---
+
+## Geomean Summary (Mind-Ray vs Mitsuba 3)
+
+| Metric | Geomean Speedup |
+|--------|-----------------|
+| **Steady-State** | **$([math]::Round($steadyGeomean, 1))x** |
+| **Cold Start** | **$([math]::Round($coldGeomean, 1))x** |
+
+*Computed across $($steadySpeedups.Count) configurations.*
 
 ---
 
