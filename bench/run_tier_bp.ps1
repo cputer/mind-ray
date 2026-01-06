@@ -262,7 +262,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 $reportFile = "$BENCH_DIR\results\TIER_BP_$TIMESTAMP.md"
 $gpuName = & nvidia-smi --query-gpu=name --format=csv,noheader 2>$null
 
-$scenesRun = ($allResults | Select-Object -ExpandProperty scene -Unique) -join ", "
+$scenesRun = ($allResults | ForEach-Object { $_.scene } | Select-Object -Unique) -join ", "
 
 $reportContent = @"
 # Mind-Ray Tier BP (Persistent) Benchmark Results
@@ -305,7 +305,7 @@ $reportContent = @"
 "@
 
 # Generate per-scene results
-$sceneGroups = $allResults | Group-Object -Property scene
+$sceneGroups = $allResults | Group-Object -Property { $_.scene }
 
 foreach ($sceneGroup in $sceneGroups) {
     $currentScene = $sceneGroup.Name
@@ -319,7 +319,7 @@ foreach ($sceneGroup in $sceneGroups) {
 "@
 
     # Group by spheres within scene
-    $configGroups = $sceneResults | Group-Object -Property spheres
+    $configGroups = $sceneResults | Group-Object -Property { $_.spheres }
 
     foreach ($configGroup in $configGroups) {
         $configResults = $configGroup.Group
@@ -363,7 +363,7 @@ foreach ($sceneGroup in $sceneGroups) {
     $sceneResults = $sceneGroup.Group
 
     # Group by spheres within scene
-    $configGroups = $sceneResults | Group-Object -Property spheres
+    $configGroups = $sceneResults | Group-Object -Property { $_.spheres }
 
     foreach ($configGroup in $configGroups) {
         $configResults = $configGroup.Group
@@ -398,7 +398,7 @@ $coldSpeedups = @()
 
 foreach ($sceneGroup in $sceneGroups) {
     $sceneResults = $sceneGroup.Group
-    $configGroups = $sceneResults | Group-Object -Property spheres
+    $configGroups = $sceneResults | Group-Object -Property { $_.spheres }
 
     foreach ($configGroup in $configGroups) {
         $configResults = $configGroup.Group
