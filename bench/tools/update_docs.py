@@ -69,22 +69,36 @@ def parse_tier_bp():
     gpu_match = re.search(r'\*\*GPU\*\*:\s*(.+)', content)
     gpu = gpu_match.group(1).strip() if gpu_match else "Unknown GPU"
 
+    # Parse geomean directly from Geomean Summary section
+    steady_geomean = 0.0
+    cold_geomean = 0.0
+
+    steady_match = re.search(r'\*\*Steady-State\*\*\s*\|\s*\*\*([\d.]+)x\*\*', content)
+    if steady_match:
+        steady_geomean = float(steady_match.group(1))
+
+    cold_match = re.search(r'\*\*Cold Start\*\*\s*\|\s*\*\*([\d.]+)x\*\*', content)
+    if cold_match:
+        cold_geomean = float(cold_match.group(1))
+
+    # Parse individual results for detailed breakdown
+    # Format: | Mind-Ray | <config> | <cold> | <steady> | <p95> | **<speedup>x** |
     steady_speedups = []
     cold_speedups = []
     results = []
 
-    # Parse steady state results
-    for match in re.finditer(r'\|\s*Mind-Ray\s*\|\s*(\d+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*\*\*([\d.]+)x\*\*\s*\|', content):
-        spheres = int(match.group(1))
+    # Parse steady state results from results tables
+    for match in re.finditer(r'\|\s*Mind-Ray\s*\|\s*([^|]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*\*\*([\d.]+)x\*\*\s*\|', content):
+        config = match.group(1).strip()
         cold_ms = float(match.group(2))
         steady_ms = float(match.group(3))
         speedup = float(match.group(5))
         steady_speedups.append(speedup)
-        results.append({'spheres': spheres, 'cold': cold_ms, 'steady': steady_ms, 'speedup': speedup})
+        results.append({'config': config, 'cold': cold_ms, 'steady': steady_ms, 'speedup': speedup})
 
-    # Parse cold start speedups
-    for match in re.finditer(r'\|\s*Mind-Ray\s*\|\s*\d+\s*\|\s*[\d.]+\s*\|\s*\*\*([\d.]+)x\*\*\s*\|', content):
-        cold_speedups.append(float(match.group(1)))
+    # Parse cold start speedups from cold start table
+    for match in re.finditer(r'\|\s*Mind-Ray\s*\|\s*[^|]+\s*\|\s*[^|]+\s*\|\s*([\d.]+)\s*\|\s*\*\*([\d.]+)x\*\*\s*\|', content):
+        cold_speedups.append(float(match.group(2)))
 
     return {
         'timestamp': timestamp,
@@ -92,8 +106,8 @@ def parse_tier_bp():
         'steady_speedups': steady_speedups,
         'cold_speedups': cold_speedups,
         'results': results,
-        'steady_geomean': geomean(steady_speedups),
-        'cold_geomean': geomean(cold_speedups),
+        'steady_geomean': steady_geomean if steady_geomean > 0 else geomean(steady_speedups),
+        'cold_geomean': cold_geomean if cold_geomean > 0 else geomean(cold_speedups),
     }
 
 

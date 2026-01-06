@@ -13,8 +13,8 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| **Steady-State** | **23.6x** |
-| **Cold Start** | **6.6x** |
+| **Steady-State** | **48.4x** |
+| **Cold Start** | **6.7x** |
 
 ### Tier B: Process Wall Clock (GPU-Only)
 

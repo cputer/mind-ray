@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 10:27:59
+**Auto-generated**: 2026-01-06 10:46:20
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
@@ -21,20 +21,22 @@
 
 ### Tier BP: Persistent Mode (Mind-Ray vs Mitsuba 3)
 
-> **After warmup, Mind-Ray renders 23.6x faster than Mitsuba 3.**
-> **Including cold start, Mind-Ray is 6.6x faster.**
+> **After warmup, Mind-Ray renders 48.4x faster than Mitsuba 3.**
+> **Including cold start, Mind-Ray is 6.7x faster.**
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| Steady-State | **23.6x** |
-| Cold Start | **6.6x** |
+| Steady-State | **48.4x** |
+| Cold Start | **6.7x** |
 
 **Per-configuration:**
 | Spheres | Steady Speedup | Cold Start Speedup |
 |---------|----------------|--------------------|
-| 64 | 22.6x | 6.1x |
-| 128 | 21.7x | 6.6x |
-| 256 | 26.7x | 7.3x |
+| 64 | 22.8x | 6.5x |
+| 128 | 21.9x | 7.3x |
+| 256 | 25.2x | 7.2x |
+| ? | 155.3x | 6.4x |
+| ? | 135.8x | 6.5x |
 
 **Source**: [`bench/results/LATEST_TIER_BP.md`](../bench/results/LATEST_TIER_BP.md)
 
