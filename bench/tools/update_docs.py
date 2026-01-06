@@ -197,35 +197,34 @@ def generate_engine_matrix(engines_data):
         name = engine.get('name', engine_id)
         tier = engine.get('tier', '-')
         status = engine.get('status', 'unknown')
-        source = engine.get('source', '-')
+        source = engine.get('source', '')
 
-        # Determine device type from engine characteristics
-        if 'cuda' in engine_id.lower() or 'optix' in engine_id.lower():
-            device = 'GPU'
-        elif 'python' in engine_id.lower():
-            device = 'CPU'
-        elif engine_id in ['pbrt_v4']:
-            device = 'CPU'
-        elif engine_id in ['mitsuba3', 'mitsuba3_bp', 'cycles', 'luxcore', 'falcor']:
-            device = 'GPU'
-        else:
-            device = 'GPU'
+        # Use explicit device field if present, otherwise infer
+        device = engine.get('device', None)
+        if not device:
+            if 'cuda' in engine_id.lower() or 'optix' in engine_id.lower():
+                device = 'GPU'
+            elif engine_id in ['mitsuba3', 'mitsuba3_bp', 'cycles', 'luxcore', 'falcor']:
+                device = 'GPU'
+            else:
+                device = 'GPU'
 
         # Format status with clear labels
-        if status == 'available':
+        # CPU engines in Tier B/BP are excluded by GPU-only policy
+        if device == 'CPU' and tier in ['B', 'BP']:
+            status_fmt = 'Excluded (CPU)'
+        elif status == 'available':
             status_fmt = 'Ready'
         elif status == 'manual_required':
             status_fmt = 'Manual Install'
         else:
             status_fmt = 'Not Available'
 
-        # Format source as link if URL
+        # Format source as link if URL, otherwise "-"
         if source and source.startswith('http'):
             source_fmt = f"[Link]({source})"
-        elif source and source != '-':
-            source_fmt = source
         else:
-            source_fmt = 'Built-in'
+            source_fmt = '-'
 
         lines.append(f"| {name} | {tier} | {device} | {status_fmt} | {source_fmt} |")
 

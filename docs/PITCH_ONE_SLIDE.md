@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 01:25:07
+**Auto-generated**: 2026-01-06 09:26:36
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
@@ -81,17 +81,17 @@
 | Engine | Tier | Device | Status | Source |
 |--------|------|--------|--------|--------|
 | Blender Cycles | B | GPU | Manual Install | [Link](https://www.blender.org/download/) |
-| CUDA Reference | A | GPU | Ready | Built-in |
+| CUDA Reference | A | GPU | Ready | - |
 | LuxCoreRender | B | GPU | Manual Install | [Link](https://luxcorerender.org/download/) |
-| Mind-Ray CUDA | A | GPU | Ready | Built-in |
-| Mind-Ray Tier B | B | GPU | Ready | Built-in |
-| Mind-Ray Tier BP | BP | GPU | Ready | Built-in |
+| Mind-Ray CUDA | A | GPU | Ready | - |
+| Mind-Ray Tier B | B | GPU | Ready | - |
+| Mind-Ray Tier BP | BP | GPU | Ready | - |
 | Mitsuba 3 | B | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
-| Mitsuba 3 Tier BP | BP | GPU | Ready | Built-in |
+| Mitsuba 3 Tier BP | BP | GPU | Ready | - |
 | NVIDIA Falcor | B | GPU | Not Available | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
-| OptiX SDK Path Tracer | A | GPU | Ready | Built-in |
-| PBRT-v4 | B | CPU | Ready | [Link](https://github.com/mmp/pbrt-v4) |
-| Python Reference | B | CPU | Ready | Built-in |
+| OptiX SDK Path Tracer | A | GPU | Ready | - |
+| PBRT-v4 | B | CPU | Excluded (CPU) | [Link](https://github.com/mmp/pbrt-v4) |
+| Python Reference | B | CPU | Excluded (CPU) | - |
 
 **GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
 
