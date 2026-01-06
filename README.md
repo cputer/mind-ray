@@ -6,6 +6,7 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 
 ## Performance Summary
 
+<!-- AUTO_BENCH_SUMMARY_START -->
 **GPU**: NVIDIA GeForce RTX 4070 Laptop GPU | **Config**: 640x360, 64 SPP, 4 bounces
 
 ### Tier BP: Persistent Mode (Mind-Ray vs Mitsuba 3)
@@ -19,9 +20,10 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| **Kernel Throughput** | **11.2x** |
+| **Kernel Throughput** | **10.7x** |
 
 See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and [`BENCHMARK.md`](BENCHMARK.md) for methodology.
+<!-- AUTO_BENCH_SUMMARY_END -->
 
 ---
 
@@ -49,8 +51,8 @@ See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and 
 # Tier BP: Persistent mode
 .\bench\run_tier_bp.ps1 -SphereCounts "64,128,256" -Runs 3
 
-# Regenerate pitch summary
-python bench/tools/make_pitch_one_slide.py
+# Update docs from canonical sources
+python bench/tools/update_docs.py
 ```
 
 ---
@@ -82,16 +84,44 @@ mind-ray/
 
 **Rule**: Never compare numbers across tiers.
 
+**GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
+
 See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 
 ---
 
-## Latest Reports
+## Registered Engines
 
-- [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) - One-slide summary (auto-generated)
-- [`bench/results/LATEST_TIER_BP.md`](bench/results/LATEST_TIER_BP.md) - Tier BP results
-- [`bench/results/LATEST_TIER_B.md`](bench/results/LATEST_TIER_B.md) - Tier B results
-- [`bench/results/SCALING_*.md`](bench/results/) - Tier A scaling results
+<!-- AUTO_ENGINE_MATRIX_START -->
+| Engine | Tier | Status | Source |
+|--------|------|--------|--------|
+| Blender Cycles | B | Manual | [Link](https://www.blender.org/download/) |
+| CUDA Reference | A | Available | - |
+| LuxCoreRender | B | Manual | [Link](https://luxcorerender.org/download/) |
+| Mind-Ray CUDA | A | Available | - |
+| Mind-Ray Tier B | B | Available | - |
+| Mind-Ray Tier BP | BP | Available | - |
+| Mitsuba 3 | B | Available | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
+| Mitsuba 3 Tier BP | BP | Available | - |
+| NVIDIA Falcor | B | Unavailable | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
+| OptiX SDK Path Tracer | A | Available | - |
+| PBRT-v4 | B | Available | [Link](https://github.com/mmp/pbrt-v4) |
+| Python Reference | B | Available | - |
+
+*Source: `bench/engines.json` (v2.1)*
+<!-- AUTO_ENGINE_MATRIX_END -->
+
+---
+
+## Latest Results
+
+| Tier | Report | Description |
+|------|--------|-------------|
+| **A** | [`bench/results/LATEST.md`](bench/results/LATEST.md) | Kernel-only (Mind-Ray vs CUDA Ref) |
+| **BP** | [`bench/results/LATEST_TIER_BP.md`](bench/results/LATEST_TIER_BP.md) | Persistent mode (cold + steady) |
+| **B** | [`bench/results/LATEST_TIER_B.md`](bench/results/LATEST_TIER_B.md) | Process wall clock (GPU-only) |
+
+**Pitch**: [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) (auto-generated from above)
 
 ---
 

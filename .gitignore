@@ -40,7 +40,6 @@ Thumbs.db
 toolchain/
 
 # Temporary files and secrets
-temp/orchestrator/.env
 temp/**/.env
 
 # Archive (reference implementations)

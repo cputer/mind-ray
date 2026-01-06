@@ -1,7 +1,7 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 00:09:09
-**Source Reports**: All numbers derived from raw benchmark logs.
+**Auto-generated**: 2026-01-06 00:44:53
+**Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
 
@@ -14,7 +14,6 @@
 | SPP | 64 |
 | Bounces | 4 |
 | Scene | stress (sphere grid) |
-| Sphere Counts | 64, 128, 256 |
 
 ---
 
@@ -62,45 +61,68 @@
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| Kernel Throughput | **11.2x** |
+| Kernel Throughput | **10.7x** |
 
 **Per-configuration:**
 | Spheres | Mind-Ray (M/s) | CUDA Ref (M/s) | Speedup |
 |---------|----------------|----------------|---------|
-| 16 | 5350 | 935 | 5.7x |
-| 32 | 4280 | 552 | 7.8x |
-| 64 | 3560 | 325 | 11.0x |
-| 128 | 2943 | 190 | 15.5x |
-| 256 | 2452 | 105 | 23.4x |
+| 16 | 5403 | 931 | 5.8x |
+| 32 | 4078 | 547 | 7.5x |
+| 64 | 3321 | 319 | 10.4x |
+| 128 | 2561 | 186 | 13.8x |
+| 256 | 2257 | 102 | 22.1x |
 
 **Source**: Latest `bench/results/SCALING_*.md`
 
 ---
 
+## Registered Engines
+
+| Engine | Tier | Status | Source |
+|--------|------|--------|--------|
+| Blender Cycles | B | Manual | [Link](https://www.blender.org/download/) |
+| CUDA Reference | A | Available | - |
+| LuxCoreRender | B | Manual | [Link](https://luxcorerender.org/download/) |
+| Mind-Ray CUDA | A | Available | - |
+| Mind-Ray Tier B | B | Available | - |
+| Mind-Ray Tier BP | BP | Available | - |
+| Mitsuba 3 | B | Available | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
+| Mitsuba 3 Tier BP | BP | Available | - |
+| NVIDIA Falcor | B | Unavailable | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
+| OptiX SDK Path Tracer | A | Available | - |
+| PBRT-v4 | B | Available | [Link](https://github.com/mmp/pbrt-v4) |
+| Python Reference | B | Available | - |
+
+*Source: `bench/engines.json` (v2.1)*
+
+---
+
 ## Tier Definitions
 
-| Tier | Measures | Engines |
-|------|----------|---------|
+| Tier | Measures | Comparison |
+|------|----------|------------|
 | **A** | Kernel-only (CUDA events) | Mind-Ray vs CUDA Ref |
 | **B** | Process wall clock | Mind-Ray vs Mitsuba 3 (GPU) |
-| **BP** | Persistent mode (cold + steady) | Mind-Ray vs Mitsuba 3 (GPU) |
+| **BP** | Persistent (cold + steady) | Mind-Ray vs Mitsuba 3 (GPU) |
 
 **Important**: Do NOT compare numbers across tiers.
+
+**GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
 
 ---
 
 ## Reproducibility
 
 ```powershell
-# Regenerate all benchmarks
-.\bench\run_scaling_sweep.ps1 -Counts "64,128,256" -Runs 3
+# Run benchmarks
+.\bench\run_scaling_sweep.ps1 -Counts "16,32,64,128,256" -Runs 3
 .\bench\run_tier_b.ps1 -SphereCounts "64,128,256" -MeasuredRuns 3
 .\bench\run_tier_bp.ps1 -SphereCounts "64,128,256" -Runs 3
 
-# Regenerate this pitch file
-python bench/tools/make_pitch_one_slide.py
+# Update all docs from results
+python bench/tools/update_docs.py
 ```
 
 ---
 
-*This file is auto-generated. Do not edit manually.*
+*This file is auto-generated from `bench/engines.json` and `bench/results/LATEST*.md`. Do not edit manually.*
