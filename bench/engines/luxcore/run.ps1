@@ -63,8 +63,10 @@ film.outputs.0.filename = output.png
 sampler.type = SOBOL
 halt.spp = $Spp
 
-renderengine.type = PATHCPU
+renderengine.type = PATHOCL
 path.maxdepth = $Bounces
+opencl.gpu.use = 1
+opencl.cpu.use = 0
 
 # Sky light
 scene.lights.sky.type = sky2
@@ -109,10 +111,18 @@ scene.objects.sphere$i.material = sphere$i
     Write-Host "# Generated scene: $sceneFile" -ForegroundColor Gray
 }
 
+# Get GPU name
+$gpuName = "Unknown GPU"
+try {
+    $gpuName = (& nvidia-smi --query-gpu=name --format=csv,noheader 2>$null).Trim()
+} catch { }
+
 # Output contract header
 "ENGINE=LuxCoreRender"
 "ENGINE_VERSION=$version"
 "TIER=B"
+"DEVICE=GPU"
+"DEVICE_NAME=$gpuName"
 "SCENE=$Scene"
 "WIDTH=$Width"
 "HEIGHT=$Height"

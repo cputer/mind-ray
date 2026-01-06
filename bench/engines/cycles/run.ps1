@@ -152,10 +152,18 @@ print(f"CYCLES_RENDER_MS={wall_ms:.2f}")
 $scriptFile = "$SCRIPTS_DIR\render_${Scene}_n${Spheres}.py"
 [System.IO.File]::WriteAllText($scriptFile, $pythonScript)
 
+# Get GPU name
+$gpuName = "Unknown GPU"
+try {
+    $gpuName = (& nvidia-smi --query-gpu=name --format=csv,noheader 2>$null).Trim()
+} catch { }
+
 # Output contract header
 "ENGINE=Blender-Cycles"
 "ENGINE_VERSION=$version"
 "TIER=B"
+"DEVICE=GPU"
+"DEVICE_NAME=$gpuName"
 "SCENE=$Scene"
 "WIDTH=$Width"
 "HEIGHT=$Height"
