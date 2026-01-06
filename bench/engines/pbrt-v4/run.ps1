@@ -23,6 +23,17 @@ if (!(Test-Path $PBRT_EXE)) {
     exit 1
 }
 
+# Detect if built with GPU support
+$GPU_BUILD = $false
+$BUILD_DIR = "$PSScriptRoot\..\..\third_party\pbrt-v4\build"
+$cacheFile = "$BUILD_DIR\CMakeCache.txt"
+if (Test-Path $cacheFile) {
+    $cacheContent = Get-Content $cacheFile -Raw
+    if ($cacheContent -match "PBRT_BUILD_GPU_RENDERER:BOOL=ON") {
+        $GPU_BUILD = $true
+    }
+}
+
 # Get version
 $version = "unknown"
 try {
@@ -133,14 +144,26 @@ AttributeEnd
 "BOUNCES=$Bounces"
 "SPHERES=$Spheres"
 "SCENE_MATCH=approx"
-"DEVICE=CPU"
-"DEVICE_NOTE=PBRT-v4 built without CUDA/OptiX - using CPU wavefront integrator"
+
+# Output device info based on build type
+if ($GPU_BUILD) {
+    "DEVICE=GPU"
+    "DEVICE_NAME=PBRT-v4 GPU (OptiX)"
+} else {
+    "DEVICE=CPU"
+    "DEVICE_NOTE=PBRT-v4 built without CUDA/OptiX - using CPU wavefront integrator"
+}
 
 # Run pbrt and measure wall time
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 try {
-    $output = & $PBRT_EXE $sceneFile 2>&1
+    if ($GPU_BUILD) {
+        # Use --gpu flag for GPU-accelerated rendering
+        $output = & $PBRT_EXE --gpu $sceneFile 2>&1
+    } else {
+        $output = & $PBRT_EXE $sceneFile 2>&1
+    }
     $exitCode = $LASTEXITCODE
 } catch {
     "ERROR=pbrt execution failed: $_"

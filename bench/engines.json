@@ -33,15 +33,16 @@
     },
     "pbrt_v4": {
       "name": "PBRT-v4",
-      "status": "available",
+      "status": "manual_required",
       "tier": "B",
-      "device": "CPU",
+      "device": "GPU",
       "timing_method": "End-to-end wall clock",
       "source": "https://github.com/mmp/pbrt-v4",
       "build_script": "engines/pbrt-v4/build.ps1",
       "run_script": "engines/pbrt-v4/run.ps1",
-      "install_notes": "Run build.ps1 to clone and build",
-      "supports_kernel_timing": false
+      "install_notes": "Requires CUDA Toolkit + OptiX SDK 7.1+. Run build.ps1 to build with GPU support.",
+      "supports_kernel_timing": false,
+      "gpu_requirements": "NVCC + OptiX SDK 7.1+"
     },
     "mitsuba3": {
       "name": "Mitsuba 3",

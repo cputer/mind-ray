@@ -104,15 +104,56 @@ if (Test-Path $cacheFile) {
     }
 }
 
+# Check for OptiX SDK
+$OPTIX_PATHS = @(
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 9.1.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 9.0.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 8.0.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.6.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.5.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.4.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.3.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.2.0",
+    "C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.1.0"
+)
+
+$OPTIX_PATH = $null
+foreach ($path in $OPTIX_PATHS) {
+    if (Test-Path $path) {
+        $OPTIX_PATH = $path
+        break
+    }
+}
+
+$GPU_BUILD = $false
+$CMAKE_GPU_FLAGS = ""
+
+if ($nvcc -and $OPTIX_PATH) {
+    Write-Host "  OptiX SDK: $OPTIX_PATH" -ForegroundColor Green
+    $CMAKE_GPU_FLAGS = "-DPBRT_BUILD_GPU_RENDERER=ON -DOptiX_ROOT=`"$OPTIX_PATH`""
+    $GPU_BUILD = $true
+} else {
+    if (!$nvcc) {
+        Write-Host "  WARNING: NVCC not found - building CPU-only" -ForegroundColor Yellow
+    }
+    if (!$OPTIX_PATH) {
+        Write-Host "  WARNING: OptiX SDK not found - building CPU-only" -ForegroundColor Yellow
+        Write-Host "  Download from: https://developer.nvidia.com/designworks/optix/downloads/legacy" -ForegroundColor Gray
+    }
+    $CMAKE_GPU_FLAGS = "-DPBRT_BUILD_GPU_RENDERER=OFF"
+}
+
 # Configure and build using VS Dev Shell environment
-Write-Host "`nConfiguring with CMake (GPU enabled)..." -ForegroundColor Yellow
+$buildType = if ($GPU_BUILD) { "GPU enabled" } else { "CPU-only" }
+Write-Host "`nConfiguring with CMake ($buildType)..." -ForegroundColor Yellow
 
 # Create a batch script to run in VS Dev Shell
 $batchScript = @"
 @echo off
 call "$VSDEVCMD" -arch=x64 -host_arch=x64 >nul 2>&1
 cd /d "$BUILD_DIR"
-"$CMAKE" .. -DPBRT_BUILD_GPU_RENDERER=ON -DCMAKE_BUILD_TYPE=Release
+"$CMAKE" .. $CMAKE_GPU_FLAGS -DCMAKE_BUILD_TYPE=Release
 if errorlevel 1 exit /b 1
 "$CMAKE" --build . --config Release --parallel
 "@

@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 09:49:14
+**Auto-generated**: 2026-01-06 10:00:48
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
@@ -90,7 +90,7 @@
 | Mitsuba 3 Tier BP | BP | GPU | Ready | - |
 | NVIDIA Falcor | B | GPU | Pending | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
 | OptiX SDK Path Tracer | A | GPU | Ready | - |
-| PBRT-v4 | B | CPU | Excluded (CPU) | [Link](https://github.com/mmp/pbrt-v4) |
+| PBRT-v4 | B | GPU | Pending | [Link](https://github.com/mmp/pbrt-v4) |
 | Python Reference | B | CPU | Excluded (CPU) | - |
 
 **GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
