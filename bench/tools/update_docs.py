@@ -143,28 +143,39 @@ def parse_tier_a():
 
     mindray_throughput = []
     cuda_ref_throughput = []
+    optix_throughput = []
 
     # Parse LATEST.md format: | 16 | 5403 | 931 | 890 | ... |
-    for match in re.finditer(r'\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*\d+\s*\|', content):
+    for match in re.finditer(r'\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|', content):
         spheres = int(match.group(1))
         mindray = int(match.group(2))
         cuda_ref = int(match.group(3))
+        optix = int(match.group(4))
         mindray_throughput.append((spheres, mindray))
         cuda_ref_throughput.append((spheres, cuda_ref))
+        optix_throughput.append((spheres, optix))
 
-    # Parse geomean from LATEST.md
-    geomean_speedup = 0
-    geomean_match = re.search(r'Mind-Ray vs CUDA Reference\*\*\s*\|\s*\*\*([\d.]+)x\*\*', content)
-    if geomean_match:
-        geomean_speedup = float(geomean_match.group(1))
+    # Parse geomeans from LATEST.md
+    geomean_vs_cuda = 0
+    geomean_vs_optix = 0
+
+    cuda_match = re.search(r'Mind-Ray vs CUDA Reference\*\*\s*\|\s*\*\*([\d.]+)x\*\*', content)
+    if cuda_match:
+        geomean_vs_cuda = float(cuda_match.group(1))
+
+    optix_match = re.search(r'Mind-Ray vs OptiX SDK\*\*\s*\|\s*\*\*([\d.]+)x\*\*', content)
+    if optix_match:
+        geomean_vs_optix = float(optix_match.group(1))
 
     if not mindray_throughput:
         return None
 
     return {
-        'geomean': geomean_speedup,
+        'geomean': geomean_vs_cuda,
+        'geomean_vs_optix': geomean_vs_optix,
         'mindray_throughput': mindray_throughput,
         'cuda_ref_throughput': cuda_ref_throughput,
+        'optix_throughput': optix_throughput,
     }
 
 
@@ -179,8 +190,8 @@ def generate_engine_matrix(engines_data):
     sorted_engines = sorted(engines.items(), key=lambda x: x[1].get('name', x[0]))
 
     lines = []
-    lines.append("| Engine | Tier | Status | Source |")
-    lines.append("|--------|------|--------|--------|")
+    lines.append("| Engine | Tier | Device | Status | Source |")
+    lines.append("|--------|------|--------|--------|--------|")
 
     for engine_id, engine in sorted_engines:
         name = engine.get('name', engine_id)
@@ -188,22 +199,38 @@ def generate_engine_matrix(engines_data):
         status = engine.get('status', 'unknown')
         source = engine.get('source', '-')
 
-        # Format status
-        if status == 'available':
-            status_fmt = 'Available'
-        elif status == 'manual_required':
-            status_fmt = 'Manual'
+        # Determine device type from engine characteristics
+        if 'cuda' in engine_id.lower() or 'optix' in engine_id.lower():
+            device = 'GPU'
+        elif 'python' in engine_id.lower():
+            device = 'CPU'
+        elif engine_id in ['pbrt_v4']:
+            device = 'CPU'
+        elif engine_id in ['mitsuba3', 'mitsuba3_bp', 'cycles', 'luxcore', 'falcor']:
+            device = 'GPU'
         else:
-            status_fmt = 'Unavailable'
+            device = 'GPU'
+
+        # Format status with clear labels
+        if status == 'available':
+            status_fmt = 'Ready'
+        elif status == 'manual_required':
+            status_fmt = 'Manual Install'
+        else:
+            status_fmt = 'Not Available'
 
         # Format source as link if URL
-        if source.startswith('http'):
+        if source and source.startswith('http'):
             source_fmt = f"[Link]({source})"
-        else:
+        elif source and source != '-':
             source_fmt = source
+        else:
+            source_fmt = 'Built-in'
 
-        lines.append(f"| {name} | {tier} | {status_fmt} | {source_fmt} |")
+        lines.append(f"| {name} | {tier} | {device} | {status_fmt} | {source_fmt} |")
 
+    lines.append("")
+    lines.append("**GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.")
     lines.append("")
     lines.append(f"*Source: `bench/engines.json` (v{engines_data.get('version', '?')})*")
 
@@ -227,12 +254,21 @@ def generate_bench_summary(tier_bp, tier_b, tier_a):
         lines.append(f"| **Cold Start** | **{tier_bp['cold_geomean']:.1f}x** |")
         lines.append("")
 
-    if tier_a:
-        lines.append("### Tier A: Kernel-Only (Mind-Ray vs CUDA Reference)")
+    if tier_b:
+        lines.append("### Tier B: Process Wall Clock (GPU-Only)")
         lines.append("")
-        lines.append("| Metric | Geomean Speedup |")
-        lines.append("|--------|-----------------|")
-        lines.append(f"| **Kernel Throughput** | **{tier_a['geomean']:.1f}x** |")
+        lines.append("| Comparison | Geomean Speedup |")
+        lines.append("|------------|-----------------|")
+        lines.append(f"| **Mind-Ray vs Mitsuba 3** | **{tier_b['geomean']:.2f}x** |")
+        lines.append("")
+
+    if tier_a:
+        lines.append("### Tier A: Kernel-Only")
+        lines.append("")
+        lines.append("| Comparison | Geomean Speedup |")
+        lines.append("|------------|-----------------|")
+        lines.append(f"| **Mind-Ray vs OptiX** | **{tier_a.get('geomean_vs_optix', 0):.1f}x** |")
+        lines.append(f"| **Mind-Ray vs CUDA Ref** | **{tier_a['geomean']:.1f}x** |")
         lines.append("")
 
     lines.append("See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and [`BENCHMARK.md`](BENCHMARK.md) for methodology.")

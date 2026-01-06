@@ -16,11 +16,18 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 | **Steady-State** | **18.7x** |
 | **Cold Start** | **5.9x** |
 
-### Tier A: Kernel-Only (Mind-Ray vs CUDA Reference)
+### Tier B: Process Wall Clock (GPU-Only)
 
-| Metric | Geomean Speedup |
-|--------|-----------------|
-| **Kernel Throughput** | **10.7x** |
+| Comparison | Geomean Speedup |
+|------------|-----------------|
+| **Mind-Ray vs Mitsuba 3** | **1.56x** |
+
+### Tier A: Kernel-Only
+
+| Comparison | Geomean Speedup |
+|------------|-----------------|
+| **Mind-Ray vs OptiX** | **4.1x** |
+| **Mind-Ray vs CUDA Ref** | **10.7x** |
 
 See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and [`BENCHMARK.md`](BENCHMARK.md) for methodology.
 <!-- AUTO_BENCH_SUMMARY_END -->
@@ -93,20 +100,22 @@ See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 ## Registered Engines
 
 <!-- AUTO_ENGINE_MATRIX_START -->
-| Engine | Tier | Status | Source |
-|--------|------|--------|--------|
-| Blender Cycles | B | Manual | [Link](https://www.blender.org/download/) |
-| CUDA Reference | A | Available | - |
-| LuxCoreRender | B | Manual | [Link](https://luxcorerender.org/download/) |
-| Mind-Ray CUDA | A | Available | - |
-| Mind-Ray Tier B | B | Available | - |
-| Mind-Ray Tier BP | BP | Available | - |
-| Mitsuba 3 | B | Available | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
-| Mitsuba 3 Tier BP | BP | Available | - |
-| NVIDIA Falcor | B | Unavailable | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
-| OptiX SDK Path Tracer | A | Available | - |
-| PBRT-v4 | B | Available | [Link](https://github.com/mmp/pbrt-v4) |
-| Python Reference | B | Available | - |
+| Engine | Tier | Device | Status | Source |
+|--------|------|--------|--------|--------|
+| Blender Cycles | B | GPU | Manual Install | [Link](https://www.blender.org/download/) |
+| CUDA Reference | A | GPU | Ready | Built-in |
+| LuxCoreRender | B | GPU | Manual Install | [Link](https://luxcorerender.org/download/) |
+| Mind-Ray CUDA | A | GPU | Ready | Built-in |
+| Mind-Ray Tier B | B | GPU | Ready | Built-in |
+| Mind-Ray Tier BP | BP | GPU | Ready | Built-in |
+| Mitsuba 3 | B | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
+| Mitsuba 3 Tier BP | BP | GPU | Ready | Built-in |
+| NVIDIA Falcor | B | GPU | Not Available | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
+| OptiX SDK Path Tracer | A | GPU | Ready | Built-in |
+| PBRT-v4 | B | CPU | Ready | [Link](https://github.com/mmp/pbrt-v4) |
+| Python Reference | B | CPU | Ready | Built-in |
+
+**GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
 
 *Source: `bench/engines.json` (v2.1)*
 <!-- AUTO_ENGINE_MATRIX_END -->
