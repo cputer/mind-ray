@@ -84,77 +84,191 @@ def main():
         print("ERROR=No suitable Mitsuba variant available")
         sys.exit(1)
 
-    # Build scene programmatically (stress test with N spheres)
+    # Build scene programmatically based on scene_name
     import numpy as np
 
-    # Create sphere grid
-    grid_size = int(np.ceil(np.sqrt(spheres)))
-    spacing = 2.0
-    offset = (grid_size - 1) * spacing / 2.0
+    scene_match = "matched"  # Will be set to "approx" if scene differs significantly
 
-    sphere_shapes = []
-    for i in range(spheres):
-        x = (i % grid_size) * spacing - offset
-        z = (i // grid_size) * spacing - offset
-        y = 0.5
-
-        # Random-ish colors
-        r = abs(np.sin(i * 0.7)) * 0.8 + 0.2
-        g = abs(np.sin(i * 1.3)) * 0.8 + 0.2
-        b = abs(np.sin(i * 2.1)) * 0.8 + 0.2
-
-        sphere_shapes.append({
-            'type': 'sphere',
-            'to_world': mi.ScalarTransform4f().translate([x, y, z]).scale(0.5),
-            'bsdf': {
-                'type': 'diffuse',
-                'reflectance': {'type': 'rgb', 'value': [r, g, b]}
-            }
-        })
-
-    # Build scene dict
-    scene_dict = {
-        'type': 'scene',
-        'integrator': {
-            'type': 'path',
-            'max_depth': bounces
-        },
-        'sensor': {
-            'type': 'perspective',
-            'fov': 50,
-            'to_world': mi.ScalarTransform4f().look_at(
-                origin=[0, 3, 12],
-                target=[0, 1, 0],
-                up=[0, 1, 0]
-            ),
-            'film': {
-                'type': 'hdrfilm',
-                'width': width,
-                'height': height,
-                'pixel_format': 'rgb'
+    if scene_name == "cornell":
+        # Cornell box scene
+        scene_dict = {
+            'type': 'scene',
+            'integrator': {
+                'type': 'path',
+                'max_depth': bounces
             },
-            'sampler': {
-                'type': 'independent',
-                'sample_count': spp
-            }
-        },
-        'emitter': {
-            'type': 'constant',
-            'radiance': {'type': 'rgb', 'value': [1.0, 1.0, 1.0]}
-        },
-        'ground': {
-            'type': 'rectangle',
-            'to_world': mi.ScalarTransform4f().translate([0, -0.5, 0]).rotate([1, 0, 0], -90).scale(100),
-            'bsdf': {
-                'type': 'diffuse',
-                'reflectance': {'type': 'rgb', 'value': [0.5, 0.5, 0.5]}
+            'sensor': {
+                'type': 'perspective',
+                'fov': 39.3,
+                'to_world': mi.ScalarTransform4f().look_at(
+                    origin=[278, 273, -800],
+                    target=[278, 273, 0],
+                    up=[0, 1, 0]
+                ),
+                'film': {
+                    'type': 'hdrfilm',
+                    'width': width,
+                    'height': height,
+                    'pixel_format': 'rgb'
+                },
+                'sampler': {
+                    'type': 'independent',
+                    'sample_count': spp
+                }
+            },
+            # Cornell box walls
+            'floor': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([278, 0, 279.5]).scale(278),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.725, 0.71, 0.68]}}
+            },
+            'ceiling': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([278, 548.8, 279.5]).rotate([1, 0, 0], 180).scale(278),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.725, 0.71, 0.68]}}
+            },
+            'back_wall': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([278, 274.4, 559]).rotate([1, 0, 0], 90).scale(278),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.725, 0.71, 0.68]}}
+            },
+            'left_wall': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([0, 274.4, 279.5]).rotate([0, 0, 1], 90).rotate([1, 0, 0], 90).scale(278),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.63, 0.065, 0.05]}}  # Red
+            },
+            'right_wall': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([556, 274.4, 279.5]).rotate([0, 0, 1], -90).rotate([1, 0, 0], 90).scale(278),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.14, 0.45, 0.091]}}  # Green
+            },
+            # Light source
+            'light': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([278, 548, 279.5]).rotate([1, 0, 0], 180).scale(65),
+                'emitter': {'type': 'area', 'radiance': {'type': 'rgb', 'value': [17.0, 12.0, 4.0]}}
+            },
+            # Short box
+            'short_box': {
+                'type': 'cube',
+                'to_world': mi.ScalarTransform4f().translate([185, 82.5, 169]).rotate([0, 1, 0], -17).scale([82.5, 82.5, 82.5]),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.725, 0.71, 0.68]}}
+            },
+            # Tall box
+            'tall_box': {
+                'type': 'cube',
+                'to_world': mi.ScalarTransform4f().translate([368, 165, 351]).rotate([0, 1, 0], 15).scale([82.5, 165, 82.5]),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.725, 0.71, 0.68]}}
             }
         }
-    }
 
-    # Add spheres
-    for i, sphere in enumerate(sphere_shapes):
-        scene_dict[f'sphere_{i}'] = sphere
+    elif scene_name == "spheres":
+        # Simple 3x3 sphere grid (fixed count, similar to Mind-Ray spheres scene)
+        scene_dict = {
+            'type': 'scene',
+            'integrator': {
+                'type': 'path',
+                'max_depth': bounces
+            },
+            'sensor': {
+                'type': 'perspective',
+                'fov': 50,
+                'to_world': mi.ScalarTransform4f().look_at(
+                    origin=[0, 3, 8],
+                    target=[0, 0, 0],
+                    up=[0, 1, 0]
+                ),
+                'film': {
+                    'type': 'hdrfilm',
+                    'width': width,
+                    'height': height,
+                    'pixel_format': 'rgb'
+                },
+                'sampler': {
+                    'type': 'independent',
+                    'sample_count': spp
+                }
+            },
+            'emitter': {
+                'type': 'constant',
+                'radiance': {'type': 'rgb', 'value': [0.8, 0.9, 1.0]}
+            },
+            'ground': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([0, -0.5, 0]).rotate([1, 0, 0], -90).scale(50),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.4, 0.4, 0.4]}}
+            }
+        }
+        # Add 3x3 grid of spheres with different materials
+        colors = [
+            [0.8, 0.2, 0.2], [0.2, 0.8, 0.2], [0.2, 0.2, 0.8],
+            [0.8, 0.8, 0.2], [0.8, 0.2, 0.8], [0.2, 0.8, 0.8],
+            [0.9, 0.5, 0.2], [0.5, 0.9, 0.2], [0.2, 0.5, 0.9]
+        ]
+        for i in range(9):
+            x = (i % 3 - 1) * 2.0
+            z = (i // 3 - 1) * 2.0
+            scene_dict[f'sphere_{i}'] = {
+                'type': 'sphere',
+                'to_world': mi.ScalarTransform4f().translate([x, 0.5, z]).scale(0.5),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': colors[i]}}
+            }
+
+    else:  # stress scene (default)
+        # Stress test with N spheres in a grid
+        grid_size = int(np.ceil(np.sqrt(spheres)))
+        spacing = 2.0
+        offset = (grid_size - 1) * spacing / 2.0
+
+        scene_dict = {
+            'type': 'scene',
+            'integrator': {
+                'type': 'path',
+                'max_depth': bounces
+            },
+            'sensor': {
+                'type': 'perspective',
+                'fov': 50,
+                'to_world': mi.ScalarTransform4f().look_at(
+                    origin=[0, 3, 12],
+                    target=[0, 1, 0],
+                    up=[0, 1, 0]
+                ),
+                'film': {
+                    'type': 'hdrfilm',
+                    'width': width,
+                    'height': height,
+                    'pixel_format': 'rgb'
+                },
+                'sampler': {
+                    'type': 'independent',
+                    'sample_count': spp
+                }
+            },
+            'emitter': {
+                'type': 'constant',
+                'radiance': {'type': 'rgb', 'value': [1.0, 1.0, 1.0]}
+            },
+            'ground': {
+                'type': 'rectangle',
+                'to_world': mi.ScalarTransform4f().translate([0, -0.5, 0]).rotate([1, 0, 0], -90).scale(100),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [0.5, 0.5, 0.5]}}
+            }
+        }
+
+        # Add spheres in grid
+        for i in range(spheres):
+            x = (i % grid_size) * spacing - offset
+            z = (i // grid_size) * spacing - offset
+            y = 0.5
+            r = abs(np.sin(i * 0.7)) * 0.8 + 0.2
+            g = abs(np.sin(i * 1.3)) * 0.8 + 0.2
+            b = abs(np.sin(i * 2.1)) * 0.8 + 0.2
+            scene_dict[f'sphere_{i}'] = {
+                'type': 'sphere',
+                'to_world': mi.ScalarTransform4f().translate([x, y, z]).scale(0.5),
+                'bsdf': {'type': 'diffuse', 'reflectance': {'type': 'rgb', 'value': [r, g, b]}}
+            }
 
     # Load scene
     scene = mi.load_dict(scene_dict)
@@ -196,6 +310,7 @@ def main():
     if device_name:
         print(f"DEVICE_NAME={device_name}")
     print(f"SCENE={scene_name}")
+    print(f"SCENE_MATCH={scene_match}")
     print(f"WIDTH={width}")
     print(f"HEIGHT={height}")
     print(f"SPP={spp}")

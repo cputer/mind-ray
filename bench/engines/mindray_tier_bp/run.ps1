@@ -58,6 +58,7 @@ foreach ($line in $output) {
 "DEVICE=GPU"
 "DEVICE_NAME=$gpuName"
 "SCENE=$Scene"
+"SCENE_MATCH=matched"
 "WIDTH=$Width"
 "HEIGHT=$Height"
 "SPP=$Spp"
