@@ -39,9 +39,9 @@ Both engines keep their runtime (CUDA context / Python+Mitsuba) alive across all
 |--------|---------|-----------------|-------------------|----------|----------------|
 | Mind-Ray | 64 | 70.69 | 4.51 | 4.73 | **22.6x** |
 | Mitsuba 3 | 64 | 432.97 | 101.93 | 104.91 | 1.00x |
-| Mind-Ray | 128 | 73.94 | 5.58 | 6.01 | **18.27x** |
+| Mind-Ray | 128 | 73.94 | 5.58 | 6.01 | **21.7x** |
 | Mitsuba 3 | 128 | 487.4 | 121.34 | 125.76 | 1.00x |
-| Mind-Ray | 256 | 74.17 | 6.44 | 7.16 | **15.83x** |
+| Mind-Ray | 256 | 74.17 | 6.44 | 7.16 | **26.7x** |
 | Mitsuba 3 | 256 | 542.35 | 171.65 | 177.18 | 1.00x |
 
 ---
@@ -50,11 +50,11 @@ Both engines keep their runtime (CUDA context / Python+Mitsuba) alive across all
 
 | Engine | Spheres | Cold Start (ms) | Cold Start Speedup |
 |--------|---------|-----------------|-------------------|
-| Mind-Ray | 64 | 70.69 | **6.12x** |
+| Mind-Ray | 64 | 70.69 | **6.1x** |
 | Mitsuba 3 | 64 | 432.97 | 1.00x |
-| Mind-Ray | 128 | 73.94 | **5.86x** |
+| Mind-Ray | 128 | 73.94 | **6.6x** |
 | Mitsuba 3 | 128 | 487.4 | 1.00x |
-| Mind-Ray | 256 | 74.17 | **5.84x** |
+| Mind-Ray | 256 | 74.17 | **7.3x** |
 | Mitsuba 3 | 256 | 542.35 | 1.00x |
 
 ---

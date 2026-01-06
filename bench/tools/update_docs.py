@@ -215,10 +215,11 @@ def generate_engine_matrix(engines_data):
             status_fmt = 'Excluded (CPU)'
         elif status == 'available':
             status_fmt = 'Ready'
-        elif status == 'manual_required':
-            status_fmt = 'Manual Install'
+        elif status in ['manual_required', 'unavailable']:
+            # Not yet benchmarked - show as Pending
+            status_fmt = 'Pending'
         else:
-            status_fmt = 'Not Available'
+            status_fmt = 'Pending'
 
         # Format source as link if URL, otherwise "-"
         if source and source.startswith('http'):

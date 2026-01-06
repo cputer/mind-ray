@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 09:26:36
+**Auto-generated**: 2026-01-06 09:49:14
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
@@ -21,20 +21,20 @@
 
 ### Tier BP: Persistent Mode (Mind-Ray vs Mitsuba 3)
 
-> **After warmup, Mind-Ray renders 18.7x faster than Mitsuba 3.**
-> **Including cold start, Mind-Ray is 5.9x faster.**
+> **After warmup, Mind-Ray renders 23.6x faster than Mitsuba 3.**
+> **Including cold start, Mind-Ray is 6.6x faster.**
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| Steady-State | **18.7x** |
-| Cold Start | **5.9x** |
+| Steady-State | **23.6x** |
+| Cold Start | **6.6x** |
 
 **Per-configuration:**
 | Spheres | Steady Speedup | Cold Start Speedup |
 |---------|----------------|--------------------|
 | 64 | 22.6x | 6.1x |
-| 128 | 18.3x | 5.9x |
-| 256 | 15.8x | 5.8x |
+| 128 | 21.7x | 6.6x |
+| 256 | 26.7x | 7.3x |
 
 **Source**: [`bench/results/LATEST_TIER_BP.md`](../bench/results/LATEST_TIER_BP.md)
 
@@ -80,15 +80,15 @@
 
 | Engine | Tier | Device | Status | Source |
 |--------|------|--------|--------|--------|
-| Blender Cycles | B | GPU | Manual Install | [Link](https://www.blender.org/download/) |
+| Blender Cycles | B | GPU | Pending | [Link](https://www.blender.org/download/) |
 | CUDA Reference | A | GPU | Ready | - |
-| LuxCoreRender | B | GPU | Manual Install | [Link](https://luxcorerender.org/download/) |
+| LuxCoreRender | B | GPU | Pending | [Link](https://luxcorerender.org/download/) |
 | Mind-Ray CUDA | A | GPU | Ready | - |
 | Mind-Ray Tier B | B | GPU | Ready | - |
 | Mind-Ray Tier BP | BP | GPU | Ready | - |
 | Mitsuba 3 | B | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
 | Mitsuba 3 Tier BP | BP | GPU | Ready | - |
-| NVIDIA Falcor | B | GPU | Not Available | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
+| NVIDIA Falcor | B | GPU | Pending | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
 | OptiX SDK Path Tracer | A | GPU | Ready | - |
 | PBRT-v4 | B | CPU | Excluded (CPU) | [Link](https://github.com/mmp/pbrt-v4) |
 | Python Reference | B | CPU | Excluded (CPU) | - |
