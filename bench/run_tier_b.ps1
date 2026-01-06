@@ -53,7 +53,7 @@ Write-Host "  GPU-Only Mode: $GpuOnly"
 Write-Host ""
 
 # GPU-only engines (confirmed GPU backends)
-$GPU_ENGINES = @("mitsuba3", "mindray_tier_b")
+$GPU_ENGINES = @("mitsuba3", "mindray_tier_b", "cycles", "luxcore")
 # CPU-only engines (excluded from GPU-only runs)
 $CPU_ENGINES = @("pbrt_v4", "python_ref")
 # Track exclusions
@@ -106,6 +106,29 @@ foreach ($engineId in $enginesConfig.engines.PSObject.Properties.Name) {
                 if (Test-Path $mindrayExe) {
                     $available = $true
                     Write-Host "Detected: Mind-Ray Tier B at $mindrayExe" -ForegroundColor Green
+                }
+            }
+            # Check for Blender Cycles
+            elseif ($engineId -eq "cycles") {
+                $blenderPaths = @(
+                    "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
+                    "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe",
+                    "C:\Program Files\Blender Foundation\Blender 4.2\blender.exe"
+                )
+                foreach ($blenderPath in $blenderPaths) {
+                    if (Test-Path $blenderPath) {
+                        $available = $true
+                        Write-Host "Detected: Blender Cycles at $blenderPath" -ForegroundColor Green
+                        break
+                    }
+                }
+            }
+            # Check for LuxCore
+            elseif ($engineId -eq "luxcore") {
+                $luxcorePath = "$BENCH_DIR\third_party\luxcorerender\luxcoreconsole.exe"
+                if (Test-Path $luxcorePath) {
+                    $available = $true
+                    Write-Host "Detected: LuxCoreRender at $luxcorePath" -ForegroundColor Green
                 }
             }
             # Generic check

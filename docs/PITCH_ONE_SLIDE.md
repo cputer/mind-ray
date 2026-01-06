@@ -1,6 +1,6 @@
 # Mind-Ray Performance Summary (One-Slide Pitch)
 
-**Auto-generated**: 2026-01-06 10:46:20
+**Auto-generated**: 2026-01-06 13:52:13
 **Source**: `bench/engines.json` + `bench/results/LATEST*.md`
 
 ---
@@ -46,14 +46,14 @@
 
 | Metric | Geomean Speedup |
 |--------|-----------------|
-| Process Wall Clock | **1.56x** |
+| Process Wall Clock | **1.58x** |
 
 **Per-configuration:**
 | Spheres | Mind-Ray (ms) | Mitsuba 3 (ms) | Speedup |
 |---------|---------------|----------------|---------|
-| 64 | 103.9 | 128.6 | 1.24x |
-| 128 | 98.3 | 150.7 | 1.53x |
-| 256 | 101.5 | 203.6 | 2.01x |
+| 64 | 98.2 | 127.8 | 1.30x |
+| 128 | 99.3 | 149.5 | 1.51x |
+| 256 | 103.1 | 205.7 | 2.00x |
 
 **Source**: [`bench/results/LATEST_TIER_B.md`](../bench/results/LATEST_TIER_B.md)
 
@@ -82,7 +82,7 @@
 
 | Engine | Tier | Device | Status | Source |
 |--------|------|--------|--------|--------|
-| Blender Cycles | B | GPU | Pending | [Link](https://www.blender.org/download/) |
+| Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
 | CUDA Reference | A | GPU | Ready | - |
 | LuxCoreRender | B | GPU | Pending | [Link](https://luxcorerender.org/download/) |
 | Mind-Ray CUDA | A | GPU | Ready | - |

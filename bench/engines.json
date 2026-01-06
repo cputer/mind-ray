@@ -67,12 +67,12 @@
     },
     "cycles": {
       "name": "Blender Cycles",
-      "status": "manual_required",
+      "status": "available",
       "tier": "B",
       "timing_method": "End-to-end wall clock",
       "source": "https://www.blender.org/download/",
       "run_script": "engines/cycles/run.ps1",
-      "install_notes": "Download Blender from blender.org",
+      "install_notes": "Requires Blender 5.0+ installed",
       "supports_kernel_timing": false
     },
     "falcor": {

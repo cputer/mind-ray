@@ -10,10 +10,11 @@ param(
     [int]$Spheres = 64
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 # Try to find Blender
 $BLENDER_PATHS = @(
+    "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
     "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe",
     "C:\Program Files\Blender Foundation\Blender 4.2\blender.exe",
     "C:\Program Files\Blender Foundation\Blender 4.1\blender.exe",
@@ -48,7 +49,7 @@ if (!$BLENDER_EXE -or !(Test-Path $BLENDER_EXE)) {
 # Get version
 $version = "unknown"
 try {
-    $versionOutput = & $BLENDER_EXE --version 2>&1
+    $versionOutput = (& $BLENDER_EXE --version 2>&1) -join "`n"
     if ($versionOutput -match "Blender (\d+\.\d+)") {
         $version = $Matches[1]
     }
@@ -137,8 +138,8 @@ for i in range(num_spheres):
     mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (r, g, b, 1)
     sphere.data.materials.append(mat)
 
-# Set output path
-scene.render.filepath = "$OUTPUT_DIR/output"
+# Set output path (use forward slashes for Python)
+scene.render.filepath = "$($OUTPUT_DIR -replace '\\', '/')/output"
 
 # Time the render
 start_time = time.perf_counter()
@@ -175,16 +176,19 @@ try {
 # Run Blender and measure wall time
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-try {
-    $output = & $BLENDER_EXE --background --python $scriptFile 2>&1
-    $exitCode = $LASTEXITCODE
-} catch {
-    "ERROR=Blender execution failed: $_"
-    exit 1
-}
+# Use cmd to avoid PowerShell treating stderr as error
+$output = cmd /c "`"$BLENDER_EXE`" --background --python `"$scriptFile`" 2>&1"
+$exitCode = $LASTEXITCODE
 
 $stopwatch.Stop()
 $wallMs = $stopwatch.Elapsed.TotalMilliseconds
+
+# Check for actual errors (non-zero exit code)
+if ($exitCode -ne 0) {
+    "ERROR=Blender exited with code $exitCode"
+    "STATUS=failed"
+    exit 1
+}
 
 # Try to parse Cycles internal timing
 $cyclesMs = $wallMs
