@@ -165,3 +165,15 @@ MIT - see [LICENSE](LICENSE).
 
 - *Ray Tracing in One Weekend* - Peter Shirley
 - *Physically Based Rendering* - Pharr, Jakob, Humphreys
+
+---
+
+## Built on MIND
+
+Mind-Ray's CPU renderer is written in [**MIND**](https://github.com/cputer/mind), a systems programming language designed for AI/ML and numerical computing. MIND provides:
+
+- Static tensor types with compile-time shape checking
+- MLIR/LLVM backend for optimized code generation
+- Deterministic builds for reproducible results
+
+Learn more at [mindlang.dev](https://mindlang.dev).
