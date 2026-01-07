@@ -9,30 +9,38 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 <!-- AUTO_BENCH_SUMMARY_START -->
 **GPU**: NVIDIA GeForce RTX 4070 Laptop GPU | **Config**: 640x360, 64 SPP, 4 bounces
 
+### Tier B Wall-Clock Leaderboard (GPU-Only)
+
+**Winner: Mind-Ray** — fastest end-to-end wall clock across all scenes.
+
+| Rank | Engine | Geomean (ms) | vs Mind-Ray |
+|------|--------|--------------|-------------|
+| 1 | **Mind-Ray** | **99.8** | baseline |
+| 2 | Mitsuba 3 | 1024.2 | 10.3x slower |
+| 3 | Falcor | 1202.4 | 12.0x slower |
+| 4 | Cycles 5.0 | 2997.4 | 30.0x slower |
+| 5 | LuxCore | 5041.1 | 50.5x slower |
+
+*Lower is better. Geomean across stress_n64, stress_n128, stress_n256.*
+
 ### Tier BP: Persistent Mode (Mind-Ray vs Mitsuba 3)
 
-| Metric | Geomean Speedup |
-|--------|-----------------|
-| **Steady-State** | **48.4x** |
-| **Cold Start** | **6.7x** |
+| Metric | Mind-Ray | Mitsuba 3 | Speedup |
+|--------|----------|-----------|---------|
+| Steady-State (ms/frame) | 5.6 | 131.6 | **48.4x** |
+| Cold Start (ms) | 71.6 | 480.8 | **6.7x** |
 
-### Tier B: Process Wall Clock (GPU-Only)
+### Tier A Kernel Leaderboard
 
-| Comparison | Geomean Speedup |
-|------------|-----------------|
-| **Mind-Ray vs Mitsuba 3** | **10.5x** |
-| **Mind-Ray vs Cycles 5.0** | **30.0x** |
-| **Mind-Ray vs LuxCore** | **50.5x** |
-| **Mind-Ray vs Falcor** | **12.0x** |
+| Rank | Engine | Geomean (M rays/s) | vs Mind-Ray |
+|------|--------|-------------------|-------------|
+| 1 | **Mind-Ray** | **3517** | baseline |
+| 2 | OptiX SDK | 857 | 4.1x slower |
+| 3 | CUDA Reference | 329 | 10.7x slower |
 
-### Tier A: Kernel-Only
+*Higher is better. Kernel-only timing via CUDA events.*
 
-| Comparison | Geomean Speedup |
-|------------|-----------------|
-| **Mind-Ray vs OptiX** | **4.1x** |
-| **Mind-Ray vs CUDA Ref** | **10.7x** |
-
-See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and [`BENCHMARK.md`](BENCHMARK.md) for methodology.
+See [`BENCHMARK.md`](BENCHMARK.md) for methodology and [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown.
 <!-- AUTO_BENCH_SUMMARY_END -->
 
 ---
@@ -105,20 +113,18 @@ See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 <!-- AUTO_ENGINE_MATRIX_START -->
 | Engine | Tier | Device | Status | Source |
 |--------|------|--------|--------|--------|
-| Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
-| CUDA Reference | A | GPU | Ready | - |
-| LuxCoreRender | B | GPU | Ready | [Link](https://luxcorerender.org/download/) |
 | Mind-Ray CUDA | A | GPU | Ready | - |
 | Mind-Ray Tier B | B | GPU | Ready | - |
 | Mind-Ray Tier BP | BP | GPU | Ready | - |
-| Mitsuba 3 | B | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
-| Mitsuba 3 Tier BP | BP | GPU | Ready | - |
-| NVIDIA Falcor | B | GPU | Pending | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
-| OptiX SDK Path Tracer | A | GPU | Ready | - |
-| PBRT-v4 | B | GPU | Pending | [Link](https://github.com/mmp/pbrt-v4) |
-| Python Reference | B | CPU | Excluded (CPU) | - |
+| Mitsuba 3 | B, BP | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
+| Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
+| NVIDIA Falcor | B | GPU | Ready | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
+| LuxCoreRender | B | GPU | Ready | [Link](https://luxcorerender.org/download/) |
+| OptiX SDK | A | GPU | Ready | - |
+| CUDA Reference | A | GPU | Ready | - |
+| PBRT-v4 | B | GPU | Blocked | [Link](https://github.com/mmp/pbrt-v4) |
 
-**GPU-Only Policy**: Tier B and BP comparisons include only GPU-accelerated engines.
+**GPU-Only Policy**: Tier B and BP include only GPU-accelerated engines. Blocked/pending engines excluded from leaderboards.
 
 *Source: `bench/engines.json` (v2.1)*
 <!-- AUTO_ENGINE_MATRIX_END -->

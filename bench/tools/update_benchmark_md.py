@@ -1,4 +1,15 @@
-# Mind-Ray Benchmark Results
+#\!/usr/bin/env python3
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).parent.parent.parent
+BENCH = ROOT / "bench"
+
+# Load canonical JSON
+with open(BENCH / "results/LATEST_TIER_B_RESULTS.json") as f:
+    tier_b = json.load(f)
+
+content = """# Mind-Ray Benchmark Results
 
 ## Executive Summary
 
@@ -152,3 +163,8 @@
 ---
 
 *Last updated: 2026-01-07*
+"""
+
+with open(ROOT / "BENCHMARK.md", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Updated BENCHMARK.md")
