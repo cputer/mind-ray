@@ -44,8 +44,8 @@
 
 | Comparison | Geomean Speedup |
 |------------|-----------------|
-| Mind-Ray vs Mitsuba 3 | **10.3x** |
-| Mind-Ray vs Cycles 5.0 | **30.6x** |
+| Mind-Ray vs Mitsuba 3 | **10.5x** |
+| Mind-Ray vs Cycles 5.0 | **30.0x** |
 | Mind-Ray vs LuxCore | **50.5x** |
 
 **Per-configuration (Wall Clock ms):**
@@ -56,6 +56,7 @@
 | 256 | 96 | 974 | 4968 | 5037 |
 
 **Source**: [`bench/results/LATEST_TIER_B_RESULTS.json`](../bench/results/LATEST_TIER_B_RESULTS.json)
+
 
 ---
 

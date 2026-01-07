@@ -134,8 +134,8 @@ See [`results/LATEST_TIER_B_RESULTS.json`](results/LATEST_TIER_B_RESULTS.json) f
 | stress_n256 | 96 | 974 | 4968 | 5037 |
 
 **Mind-Ray vs All (Geomean)**:
-- vs Mitsuba 3: **10.3x faster**
-- vs Cycles: **30.6x faster**
+- vs Mitsuba 3: **10.5x faster**
+- vs Cycles: **30.0x faster**
 - vs LuxCore: **50.5x faster**
 
 ### LuxCore Cold Start Note

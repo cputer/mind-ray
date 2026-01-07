@@ -1,6 +1,6 @@
 # Tier B Benchmark Results
 
-**Generated**: 2026-01-06 21:31
+**Generated**: 2026-01-06 22:36
 **Source**: `results/LATEST_TIER_B_RESULTS.json`
 
 ## Tier Definition
@@ -40,8 +40,8 @@ Includes: Process startup, DLL/library loading, scene parsing, BVH construction,
 | Engine | Geomean Slowdown |
 |--------|------------------|
 | Mind-Ray | 1.00x (baseline) |
-| Mitsuba 3 | 10.26x slower |
-| Cycles | 30.58x slower |
+| Mitsuba 3 | 10.49x slower |
+| Cycles | 29.98x slower |
 | LuxCore | 50.50x slower |
 
 ## Notes

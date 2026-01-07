@@ -20,8 +20,8 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 
 | Comparison | Geomean Speedup |
 |------------|-----------------|
-| **Mind-Ray vs Mitsuba 3** | **10.3x** |
-| **Mind-Ray vs Cycles 5.0** | **30.6x** |
+| **Mind-Ray vs Mitsuba 3** | **10.5x** |
+| **Mind-Ray vs Cycles 5.0** | **30.0x** |
 | **Mind-Ray vs LuxCore** | **50.5x** |
 
 ### Tier A: Kernel-Only
