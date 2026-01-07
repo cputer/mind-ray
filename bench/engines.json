@@ -33,7 +33,7 @@
     },
     "pbrt_v4": {
       "name": "PBRT-v4",
-      "status": "manual_required",
+      "status": "blocked",
       "tier": "B",
       "device": "GPU",
       "timing_method": "End-to-end wall clock",
@@ -42,7 +42,14 @@
       "run_script": "engines/pbrt-v4/run.ps1",
       "install_notes": "Requires CUDA Toolkit + OptiX SDK 7.1+. Run build.ps1 to build with GPU support.",
       "supports_kernel_timing": false,
-      "gpu_requirements": "NVCC + OptiX SDK 7.1+"
+      "gpu_requirements": "NVCC + OptiX SDK 7.1+",
+      "blocked_reason": "Toolchain incompatibility: CUDA 12.8 nvcc + VS 2022 Preview (14.44) fails on C++20 std::ranges headers",
+      "recovery_steps": [
+        "Try VS 2022 stable toolset (17.8-17.11) instead of Preview",
+        "Try CUDA 12.4 or 12.5 instead of 12.8",
+        "Try OptiX 8.1 (legacy) instead of 9.1",
+        "Try a known-good PBRT-v4 commit"
+      ]
     },
     "mitsuba3": {
       "name": "Mitsuba 3",
@@ -79,14 +86,18 @@
     },
     "falcor": {
       "name": "NVIDIA Falcor",
-      "status": "unavailable",
+      "status": "available",
+      "version": "8.0 (eb540f6)",
       "tier": "B",
+      "device": "GPU",
       "timing_method": "End-to-end wall clock",
       "source": "https://github.com/NVIDIAGameWorks/Falcor",
       "build_script": "engines/falcor/build.ps1",
       "run_script": "engines/falcor/run.ps1",
-      "install_notes": "Manual build required",
-      "supports_kernel_timing": false
+      "executable": "third_party/falcor/build/windows-vs2022/bin/Release/Mogwai.exe",
+      "install_notes": "Built via setup_vs2022.bat + MSBuild Release.",
+      "supports_kernel_timing": false,
+      "notes": "Uses D3D12 DXR raytracing with PathTracer pass. Headless rendering via Mogwai."
     },
     "python_ref": {
       "name": "Python Reference",

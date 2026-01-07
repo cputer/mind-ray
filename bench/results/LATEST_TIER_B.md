@@ -1,6 +1,6 @@
 # Tier B Benchmark Results
 
-**Generated**: 2026-01-06 22:36
+**Generated**: 2026-01-06 23:23
 **Source**: `results/LATEST_TIER_B_RESULTS.json`
 
 ## Tier Definition
@@ -18,7 +18,7 @@ Includes: Process startup, DLL/library loading, scene parsing, BVH construction,
 | cycles | ready | 5.0 | - |
 | luxcore | ready | 2.8alpha1 | ~4s fixed overhead per run (OpenCL init) |
 | pbrt-v4 | blocked | - | CUDA 12.8 + MSVC 19.44 + OptiX 9.1 C++20 compatibility issues |
-| falcor | pending | - | Build required via Packman dependency system |
+| falcor | ready | 8.0 (eb540f6) | - |
 
 ## Benchmark Configuration
 
@@ -29,11 +29,11 @@ Includes: Process startup, DLL/library loading, scene parsing, BVH construction,
 
 ## Results (Wall Clock ms)
 
-| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
-|-------|----------|-----------|--------|---------|
-| stress_n64 | 100.1 | 1424.1 | 2043.5 | 5041.0 |
-| stress_n128 | 103.5 | 827.2 | 2640.0 | 5045.0 |
-| stress_n256 | 96.0 | 973.7 | 4968.4 | 5037.4 |
+| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |
+|-------|----------|-----------|--------|---------|--------|
+| stress_n64 | 100.1 | 1424.1 | 2043.5 | 5041.0 | 1197.5 |
+| stress_n128 | 103.5 | 827.2 | 2640.0 | 5045.0 | 1198.9 |
+| stress_n256 | 96.0 | 973.7 | 4968.4 | 5037.4 | 1210.8 |
 
 ## Speedups vs Mind-Ray
 
@@ -43,6 +43,7 @@ Includes: Process startup, DLL/library loading, scene parsing, BVH construction,
 | Mitsuba 3 | 10.49x slower |
 | Cycles | 29.98x slower |
 | LuxCore | 50.50x slower |
+| Falcor | 12.04x slower |
 
 ## Notes
 
@@ -52,6 +53,7 @@ Includes: Process startup, DLL/library loading, scene parsing, BVH construction,
 - Mind-Ray includes DLL load + BVH build + render + output in ~100ms
 - Mitsuba3 Python import overhead varies ~800ms-1400ms
 - Cycles startup overhead varies with scene complexity
+- Falcor uses D3D12 DXR for ray tracing (not CUDA)
 
 ## LuxCore Cold Start
 

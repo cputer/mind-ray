@@ -23,6 +23,7 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 | **Mind-Ray vs Mitsuba 3** | **10.5x** |
 | **Mind-Ray vs Cycles 5.0** | **30.0x** |
 | **Mind-Ray vs LuxCore** | **50.5x** |
+| **Mind-Ray vs Falcor** | **12.0x** |
 
 ### Tier A: Kernel-Only
 

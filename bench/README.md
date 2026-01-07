@@ -122,21 +122,22 @@ See [`results/LATEST_TIER_B_RESULTS.json`](results/LATEST_TIER_B_RESULTS.json) f
 | Mitsuba 3 | Ready | 3.7.1 |
 | Cycles | Ready | 5.0 |
 | LuxCore | Ready | 2.8alpha1 |
+| Falcor | Ready | 8.0 |
 | PBRT-v4 | Blocked | - |
-| Falcor | Pending | - |
 
 ### Benchmark Results (Wall Clock ms)
 
-| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
-|-------|----------|-----------|--------|---------|
-| stress_n64 | 100 | 1424 | 2044 | 5041 |
-| stress_n128 | 103 | 827 | 2640 | 5045 |
-| stress_n256 | 96 | 974 | 4968 | 5037 |
+| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |
+|-------|----------|-----------|--------|---------|--------|
+| stress_n64 | 100 | 1424 | 2044 | 5041 | 1198 |
+| stress_n128 | 103 | 827 | 2640 | 5045 | 1199 |
+| stress_n256 | 96 | 974 | 4968 | 5037 | 1211 |
 
 **Mind-Ray vs All (Geomean)**:
 - vs Mitsuba 3: **10.5x faster**
 - vs Cycles: **30.0x faster**
 - vs LuxCore: **50.5x faster**
+- vs Falcor: **12.0x faster**
 
 ### LuxCore Cold Start Note
 

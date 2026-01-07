@@ -47,13 +47,14 @@
 | Mind-Ray vs Mitsuba 3 | **10.5x** |
 | Mind-Ray vs Cycles 5.0 | **30.0x** |
 | Mind-Ray vs LuxCore | **50.5x** |
+| Mind-Ray vs Falcor | **12.0x** |
 
 **Per-configuration (Wall Clock ms):**
-| Spheres | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
-|---------|----------|-----------|--------|---------|
-| 64 | 100 | 1424 | 2044 | 5041 |
-| 128 | 103 | 827 | 2640 | 5045 |
-| 256 | 96 | 974 | 4968 | 5037 |
+| Spheres | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |
+|---------|----------|-----------|--------|---------|--------|
+| 64 | 100 | 1424 | 2044 | 5041 | 1198 |
+| 128 | 103 | 827 | 2640 | 5045 | 1199 |
+| 256 | 96 | 974 | 4968 | 5037 | 1211 |
 
 **Source**: [`bench/results/LATEST_TIER_B_RESULTS.json`](../bench/results/LATEST_TIER_B_RESULTS.json)
 

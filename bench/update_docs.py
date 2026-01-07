@@ -58,7 +58,8 @@ def compute_speedups_from_json(data):
         "mindray": {},
         "mitsuba3": {},
         "cycles": {},
-        "luxcore": {}
+        "luxcore": {},
+        "falcor": {}
     }
 
     for scene in scenes:
@@ -78,11 +79,16 @@ def compute_speedups_from_json(data):
         lx_data = results.get("luxcore", {}).get(scene, {})
         wall_times["luxcore"][scene] = lx_data.get("wall_ms_warm", 0)
 
+        # Falcor
+        fa_data = results.get("falcor", {}).get(scene, {})
+        wall_times["falcor"][scene] = fa_data.get("wall_ms", 0)
+
     # Compute per-scene slowdown ratios vs Mind-Ray
     slowdowns = {
         "mitsuba3": [],
         "cycles": [],
-        "luxcore": []
+        "luxcore": [],
+        "falcor": []
     }
 
     per_scene = {}
@@ -96,9 +102,10 @@ def compute_speedups_from_json(data):
             "mitsuba3_ms": wall_times["mitsuba3"][scene],
             "cycles_ms": wall_times["cycles"][scene],
             "luxcore_ms": wall_times["luxcore"][scene],
+            "falcor_ms": wall_times["falcor"][scene],
         }
 
-        for engine in ["mitsuba3", "cycles", "luxcore"]:
+        for engine in ["mitsuba3", "cycles", "luxcore", "falcor"]:
             eng_ms = wall_times[engine][scene]
             if eng_ms > 0:
                 ratio = eng_ms / mr
@@ -107,7 +114,7 @@ def compute_speedups_from_json(data):
 
     # Compute geomean slowdowns
     geomeans = {}
-    for engine in ["mitsuba3", "cycles", "luxcore"]:
+    for engine in ["mitsuba3", "cycles", "luxcore", "falcor"]:
         if slowdowns[engine]:
             geomeans[f"{engine}_slower"] = round(geomean(slowdowns[engine]), 2)
 
@@ -160,8 +167,8 @@ def generate_tier_b_markdown(data, computed):
     # Results Table
     lines.append("## Results (Wall Clock ms)")
     lines.append("")
-    lines.append("| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |")
-    lines.append("|-------|----------|-----------|--------|---------|")
+    lines.append("| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |")
+    lines.append("|-------|----------|-----------|--------|---------|--------|")
 
     wt = computed["wall_times"]
     for scene in config["scenes"]:
@@ -169,7 +176,8 @@ def generate_tier_b_markdown(data, computed):
         mi = wt["mitsuba3"].get(scene, 0)
         cy = wt["cycles"].get(scene, 0)
         lx = wt["luxcore"].get(scene, 0)
-        lines.append(f"| {scene} | {mr:.1f} | {mi:.1f} | {cy:.1f} | {lx:.1f} |")
+        fa = wt["falcor"].get(scene, 0)
+        lines.append(f"| {scene} | {mr:.1f} | {mi:.1f} | {cy:.1f} | {lx:.1f} | {fa:.1f} |")
     lines.append("")
 
     # Speedups
@@ -182,6 +190,7 @@ def generate_tier_b_markdown(data, computed):
     lines.append(f"| Mitsuba 3 | {geo.get('mitsuba3_slower', 0):.2f}x slower |")
     lines.append(f"| Cycles | {geo.get('cycles_slower', 0):.2f}x slower |")
     lines.append(f"| LuxCore | {geo.get('luxcore_slower', 0):.2f}x slower |")
+    lines.append(f"| Falcor | {geo.get('falcor_slower', 0):.2f}x slower |")
     lines.append("")
 
     # Notes
@@ -242,13 +251,13 @@ See [`results/LATEST_TIER_B_RESULTS.json`](results/LATEST_TIER_B_RESULTS.json) f
 | Mitsuba 3 | Ready | 3.7.1 |
 | Cycles | Ready | 5.0 |
 | LuxCore | Ready | 2.8alpha1 |
+| Falcor | Ready | 8.0 |
 | PBRT-v4 | Blocked | - |
-| Falcor | Pending | - |
 
 ### Benchmark Results (Wall Clock ms)
 
-| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
-|-------|----------|-----------|--------|---------|
+| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |
+|-------|----------|-----------|--------|---------|--------|
 """
 
     for scene in scenes:
@@ -256,13 +265,15 @@ See [`results/LATEST_TIER_B_RESULTS.json`](results/LATEST_TIER_B_RESULTS.json) f
         mi = wt["mitsuba3"].get(scene, 0)
         cy = wt["cycles"].get(scene, 0)
         lx = wt["luxcore"].get(scene, 0)
-        new_section += f"| {scene} | {mr:.0f} | {mi:.0f} | {cy:.0f} | {lx:.0f} |\n"
+        fa = wt["falcor"].get(scene, 0)
+        new_section += f"| {scene} | {mr:.0f} | {mi:.0f} | {cy:.0f} | {lx:.0f} | {fa:.0f} |\n"
 
     new_section += f"""
 **Mind-Ray vs All (Geomean)**:
 - vs Mitsuba 3: **{geo.get('mitsuba3_slower', 0):.1f}x faster**
 - vs Cycles: **{geo.get('cycles_slower', 0):.1f}x faster**
 - vs LuxCore: **{geo.get('luxcore_slower', 0):.1f}x faster**
+- vs Falcor: **{geo.get('falcor_slower', 0):.1f}x faster**
 
 ### LuxCore Cold Start Note
 
@@ -340,6 +351,7 @@ def update_root_readme(data, computed):
 | **Mind-Ray vs Mitsuba 3** | **{geo.get('mitsuba3_slower', 0):.1f}x** |
 | **Mind-Ray vs Cycles 5.0** | **{geo.get('cycles_slower', 0):.1f}x** |
 | **Mind-Ray vs LuxCore** | **{geo.get('luxcore_slower', 0):.1f}x** |
+| **Mind-Ray vs Falcor** | **{geo.get('falcor_slower', 0):.1f}x** |
 
 ### Tier A: Kernel-Only
 
@@ -384,10 +396,11 @@ def update_pitch_slide(data, computed):
 | Mind-Ray vs Mitsuba 3 | **{geo.get('mitsuba3_slower', 0):.1f}x** |
 | Mind-Ray vs Cycles 5.0 | **{geo.get('cycles_slower', 0):.1f}x** |
 | Mind-Ray vs LuxCore | **{geo.get('luxcore_slower', 0):.1f}x** |
+| Mind-Ray vs Falcor | **{geo.get('falcor_slower', 0):.1f}x** |
 
 **Per-configuration (Wall Clock ms):**
-| Spheres | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
-|---------|----------|-----------|--------|---------|
+| Spheres | Mind-Ray | Mitsuba 3 | Cycles | LuxCore | Falcor |
+|---------|----------|-----------|--------|---------|--------|
 """
 
     for scene in scenes:
@@ -397,7 +410,8 @@ def update_pitch_slide(data, computed):
         mi = wt["mitsuba3"].get(scene, 0)
         cy = wt["cycles"].get(scene, 0)
         lx = wt["luxcore"].get(scene, 0)
-        new_tier_b += f"| {spheres} | {mr:.0f} | {mi:.0f} | {cy:.0f} | {lx:.0f} |\n"
+        fa = wt["falcor"].get(scene, 0)
+        new_tier_b += f"| {spheres} | {mr:.0f} | {mi:.0f} | {cy:.0f} | {lx:.0f} | {fa:.0f} |\n"
 
     new_tier_b += """
 **Source**: [`bench/results/LATEST_TIER_B_RESULTS.json`](../bench/results/LATEST_TIER_B_RESULTS.json)
