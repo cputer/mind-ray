@@ -20,7 +20,9 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 
 | Comparison | Geomean Speedup |
 |------------|-----------------|
-| **Mind-Ray vs Mitsuba 3** | **1.58x** |
+| **Mind-Ray vs Mitsuba 3** | **10.3x** |
+| **Mind-Ray vs Cycles 5.0** | **30.6x** |
+| **Mind-Ray vs LuxCore** | **50.5x** |
 
 ### Tier A: Kernel-Only
 
@@ -104,7 +106,7 @@ See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 |--------|------|--------|--------|--------|
 | Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
 | CUDA Reference | A | GPU | Ready | - |
-| LuxCoreRender | B | GPU | Pending | [Link](https://luxcorerender.org/download/) |
+| LuxCoreRender | B | GPU | Ready | [Link](https://luxcorerender.org/download/) |
 | Mind-Ray CUDA | A | GPU | Ready | - |
 | Mind-Ray Tier B | B | GPU | Ready | - |
 | Mind-Ray Tier BP | BP | GPU | Ready | - |

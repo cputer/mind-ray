@@ -35,27 +35,27 @@
 | 64 | 22.8x | 6.5x |
 | 128 | 21.9x | 7.3x |
 | 256 | 25.2x | 7.2x |
-| ? | 155.3x | 6.4x |
-| ? | 135.8x | 6.5x |
 
 **Source**: [`bench/results/LATEST_TIER_BP.md`](../bench/results/LATEST_TIER_BP.md)
 
 ---
 
-### Tier B: Process Wall Clock (Mind-Ray vs Mitsuba 3)
+### Tier B: Process Wall Clock (GPU-Only Engines)
 
-| Metric | Geomean Speedup |
-|--------|-----------------|
-| Process Wall Clock | **1.58x** |
+| Comparison | Geomean Speedup |
+|------------|-----------------|
+| Mind-Ray vs Mitsuba 3 | **10.3x** |
+| Mind-Ray vs Cycles 5.0 | **30.6x** |
+| Mind-Ray vs LuxCore | **50.5x** |
 
-**Per-configuration:**
-| Spheres | Mind-Ray (ms) | Mitsuba 3 (ms) | Speedup |
-|---------|---------------|----------------|---------|
-| 64 | 98.2 | 127.8 | 1.30x |
-| 128 | 99.3 | 149.5 | 1.51x |
-| 256 | 103.1 | 205.7 | 2.00x |
+**Per-configuration (Wall Clock ms):**
+| Spheres | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
+|---------|----------|-----------|--------|---------|
+| 64 | 100 | 1424 | 2044 | 5041 |
+| 128 | 103 | 827 | 2640 | 5045 |
+| 256 | 96 | 974 | 4968 | 5037 |
 
-**Source**: [`bench/results/LATEST_TIER_B.md`](../bench/results/LATEST_TIER_B.md)
+**Source**: [`bench/results/LATEST_TIER_B_RESULTS.json`](../bench/results/LATEST_TIER_B_RESULTS.json)
 
 ---
 
@@ -84,7 +84,7 @@
 |--------|------|--------|--------|--------|
 | Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
 | CUDA Reference | A | GPU | Ready | - |
-| LuxCoreRender | B | GPU | Pending | [Link](https://luxcorerender.org/download/) |
+| LuxCoreRender | B | GPU | Ready | [Link](https://luxcorerender.org/download/) |
 | Mind-Ray CUDA | A | GPU | Ready | - |
 | Mind-Ray Tier B | B | GPU | Ready | - |
 | Mind-Ray Tier BP | BP | GPU | Ready | - |

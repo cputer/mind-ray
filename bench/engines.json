@@ -57,13 +57,15 @@
     },
     "luxcore": {
       "name": "LuxCoreRender",
-      "status": "manual_required",
+      "status": "available",
       "tier": "B",
+      "device": "GPU",
       "timing_method": "End-to-end wall clock",
       "source": "https://luxcorerender.org/download/",
       "run_script": "engines/luxcore/run.ps1",
       "install_notes": "Download from luxcorerender.org and extract to bench/third_party/luxcorerender",
-      "supports_kernel_timing": false
+      "supports_kernel_timing": false,
+      "notes": "First run compiles OpenCL kernels (~2 min). WARM timing uses cached kernels."
     },
     "cycles": {
       "name": "Blender Cycles",
