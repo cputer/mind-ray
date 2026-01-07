@@ -70,7 +70,7 @@ See [`BENCHMARK.md`](BENCHMARK.md) for methodology and [`docs/PITCH_ONE_SLIDE.md
 .\bench\run_tier_bp.ps1 -SphereCounts "64,128,256" -Runs 3
 
 # Update docs from canonical sources
-python bench/tools/update_docs.py
+python bench/update_docs.py
 ```
 
 ---
