@@ -16,9 +16,9 @@ A high-performance path tracer demonstrating **Mind** as an implementation langu
 | Rank | Engine | Geomean (ms) | vs Mind-Ray |
 |------|--------|--------------|-------------|
 | 1 | **Mind-Ray** | **99.8** | baseline |
-| 2 | Mitsuba 3 | 1024.2 | 10.3x slower |
+| 2 | Mitsuba 3 | 1046.8 | 10.5x slower |
 | 3 | Falcor | 1202.4 | 12.0x slower |
-| 4 | Cycles 5.0 | 2997.4 | 30.0x slower |
+| 4 | Cycles 5.0 | 2992.7 | 30.0x slower |
 | 5 | LuxCore | 5041.1 | 50.5x slower |
 
 *Lower is better. Geomean across stress_n64, stress_n128, stress_n256.*

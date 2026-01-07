@@ -9,9 +9,9 @@
 | Rank | Engine | Geomean (ms) | vs Mind-Ray |
 |------|--------|--------------|-------------|
 | 1 | **Mind-Ray** | **99.8** | baseline |
-| 2 | Mitsuba 3 | 1024.2 | 10.3x slower |
+| 2 | Mitsuba 3 | 1046.8 | 10.5x slower |
 | 3 | Falcor | 1202.4 | 12.0x slower |
-| 4 | Cycles 5.0 | 2997.4 | 30.0x slower |
+| 4 | Cycles 5.0 | 2992.7 | 30.0x slower |
 | 5 | LuxCore | 5041.1 | 50.5x slower |
 
 *Lower is better. Source: bench/results/LATEST_TIER_B_RESULTS.json*
@@ -20,7 +20,7 @@
 
 | Tier | Winner | Best Competitor | Speedup |
 |------|--------|-----------------|---------|
-| **B** (Wall Clock) | Mind-Ray | Mitsuba 3 | **10.3x** |
+| **B** (Wall Clock) | Mind-Ray | Mitsuba 3 | **10.5x** |
 | **BP** (Steady-State) | Mind-Ray | Mitsuba 3 | **48.4x** |
 | **BP** (Cold Start) | Mind-Ray | Mitsuba 3 | **6.7x** |
 | **A** (Kernel-Only) | Mind-Ray | OptiX SDK | **4.1x** |
@@ -67,7 +67,7 @@
 | stress_n64 | 100.1 | 1424.1 | 1197.5 | 2043.5 | 5041.0 |
 | stress_n128 | 103.5 | 827.2 | 1198.9 | 2640.0 | 5045.0 |
 | stress_n256 | 96.0 | 973.7 | 1210.8 | 4968.4 | 5037.4 |
-| **Geomean** | **99.8** | **1024.2** | **1202.4** | **2997.4** | **5041.1** |
+| **Geomean** | **99.8** | **1046.8** | **1202.4** | **2992.7** | **5041.1** |
 
 **Source**: [bench/results/LATEST_TIER_B_RESULTS.json](bench/results/LATEST_TIER_B_RESULTS.json)
 
