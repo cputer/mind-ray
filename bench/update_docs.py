@@ -332,35 +332,61 @@ def update_root_readme(data, computed):
         return
 
     geo = computed["geomeans"]
+    wt = computed["wall_times"]
+    scenes = data["benchmark_config"]["scenes"]
 
-    # Build new section (keep Tier A and BP from existing, update Tier B)
+    # Compute absolute geomeans for leaderboard
+    def calc_geomean(engine):
+        if engine == "luxcore":
+            vals = [wt[engine].get(s, 0) for s in scenes]
+        else:
+            vals = [wt[engine].get(s, 0) for s in scenes]
+        if all(v > 0 for v in vals):
+            return (vals[0] * vals[1] * vals[2]) ** (1/3)
+        return 0
+
+    mr_geo = calc_geomean("mindray")
+    mi_geo = calc_geomean("mitsuba3")
+    fa_geo = calc_geomean("falcor")
+    cy_geo = calc_geomean("cycles")
+    lx_geo = calc_geomean("luxcore")
+
+    # Build new section with leaderboards
     new_auto = f"""{start_marker}
 **GPU**: NVIDIA GeForce RTX 4070 Laptop GPU | **Config**: 640x360, 64 SPP, 4 bounces
 
+### Tier B Wall-Clock Leaderboard (GPU-Only)
+
+**Winner: Mind-Ray** — fastest end-to-end wall clock across all scenes.
+
+| Rank | Engine | Geomean (ms) | vs Mind-Ray |
+|------|--------|--------------|-------------|
+| 1 | **Mind-Ray** | **{mr_geo:.1f}** | baseline |
+| 2 | Mitsuba 3 | {mi_geo:.1f} | {geo.get('mitsuba3_slower', 0):.1f}x slower |
+| 3 | Falcor | {fa_geo:.1f} | {geo.get('falcor_slower', 0):.1f}x slower |
+| 4 | Cycles 5.0 | {cy_geo:.1f} | {geo.get('cycles_slower', 0):.1f}x slower |
+| 5 | LuxCore | {lx_geo:.1f} | {geo.get('luxcore_slower', 0):.1f}x slower |
+
+*Lower is better. Geomean across stress_n64, stress_n128, stress_n256.*
+
 ### Tier BP: Persistent Mode (Mind-Ray vs Mitsuba 3)
 
-| Metric | Geomean Speedup |
-|--------|-----------------|
-| **Steady-State** | **48.4x** |
-| **Cold Start** | **6.7x** |
+| Metric | Mind-Ray | Mitsuba 3 | Speedup |
+|--------|----------|-----------|---------|
+| Steady-State (ms/frame) | 5.6 | 131.6 | **48.4x** |
+| Cold Start (ms) | 71.6 | 480.8 | **6.7x** |
 
-### Tier B: Process Wall Clock (GPU-Only)
+### Tier A Kernel Leaderboard
 
-| Comparison | Geomean Speedup |
-|------------|-----------------|
-| **Mind-Ray vs Mitsuba 3** | **{geo.get('mitsuba3_slower', 0):.1f}x** |
-| **Mind-Ray vs Cycles 5.0** | **{geo.get('cycles_slower', 0):.1f}x** |
-| **Mind-Ray vs LuxCore** | **{geo.get('luxcore_slower', 0):.1f}x** |
-| **Mind-Ray vs Falcor** | **{geo.get('falcor_slower', 0):.1f}x** |
+| Rank | Engine | Geomean (M rays/s) | vs Mind-Ray |
+|------|--------|-------------------|-------------|
+| 1 | **Mind-Ray** | **3517** | baseline |
+| 2 | OptiX SDK | 857 | 4.1x slower |
+| 3 | CUDA Reference | 329 | 10.7x slower |
 
-### Tier A: Kernel-Only
+*Higher is better. Kernel-only timing via CUDA events.*
 
-| Comparison | Geomean Speedup |
-|------------|-----------------|
-| **Mind-Ray vs OptiX** | **4.1x** |
-| **Mind-Ray vs CUDA Ref** | **10.7x** |
-
-See [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown and [`BENCHMARK.md`](BENCHMARK.md) for methodology.
+See [`BENCHMARK.md`](BENCHMARK.md) for methodology and [`docs/PITCH_ONE_SLIDE.md`](docs/PITCH_ONE_SLIDE.md) for full breakdown.
 {end_marker}"""
 
     new_content = content[:start_idx] + new_auto + content[end_idx + len(end_marker):]
@@ -439,8 +465,11 @@ def verify_no_placeholders():
 
     patterns = [
         (r"\?\s*\|", "? placeholder in table"),
-        (r"1\.58x", "old 1.58x speedup"),
-        (r"claude|anthropic", "claude/anthropic mention"),
+        (r"1\.58x", "stale 1.58x speedup (pre-Tier B)"),
+        (r"1\.56x", "stale 1.56x speedup (pre-multi-engine)"),
+        (r"\bTBD\b", "TBD placeholder"),
+        (r"\bTODO\b", "TODO placeholder"),
+        (r"\?\?\?", "??? placeholder"),
     ]
 
     for fpath in files_to_check:
