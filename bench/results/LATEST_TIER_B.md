@@ -1,80 +1,60 @@
-# Mind-Ray Tier B Benchmark Results
+# Tier B Benchmark Results
 
-**Generated**: 2026-01-06 13:50:47
-**Tier**: B (End-to-End)
-**GPU**: NVIDIA GeForce RTX 4070 Laptop GPU
-**Mode**: GPU-Only
+**Generated**: 2026-01-06 21:31
+**Source**: `results/LATEST_TIER_B_RESULTS.json`
 
----
+## Tier Definition
 
-## Important Notice
+**Tier B** = End-to-end wall clock time (process start to completion)
 
-**GPU-Only Benchmark**: Only GPU-accelerated renderers are included.
-**Tier B measures end-to-end wall clock time.**
-Do NOT compare these numbers with Tier A (kernel-only) results.
+Includes: Process startup, DLL/library loading, scene parsing, BVH construction, rendering, file output
 
----
+## Engine Status
 
-## Configuration
+| Engine | Status | Version | Notes |
+|--------|--------|---------|-------|
+| mindray | ready | 1.0 | - |
+| mitsuba3 | ready | 3.7.1 | - |
+| cycles | ready | 5.0 | - |
+| luxcore | ready | 2.8alpha1 | ~4s fixed overhead per run (OpenCL init) |
+| pbrt-v4 | blocked | - | CUDA 12.8 + MSVC 19.44 + OptiX 9.1 C++20 compatibility issues |
+| falcor | pending | - | Build required via Packman dependency system |
 
-| Parameter | Value |
-|-----------|-------|
-| Resolution | 640x360 |
-| SPP | 64 |
-| Bounces | 4 |
-| Warmup Runs | 1 |
-| Measured Runs | 3 |
-| Cooldown | 3s |
-| Scene Match | approx |
-| GPU-Only Mode | Yes |
+## Benchmark Configuration
 
----
+- Resolution: 640x360
+- SPP: 64
+- Bounces: 4
+- Scenes: stress_n64, stress_n128, stress_n256
 
-## Results
+## Results (Wall Clock ms)
 
-| Engine | Device | Spheres | Median (ms) | Min (ms) | Max (ms) | Runs |
-|--------|--------|---------|-------------|----------|----------|------|
-| Mitsuba 3 | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 64 | 127.77 | 127.41 | 128.52 | 3 |
-| Blender Cycles | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 64 | 2006.72 | 1989.71 | 2026.49 | 3 |
-| Mind-Ray Tier B | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 64 | 98.25 | 97.52 | 100.02 | 3 |
-| Mitsuba 3 | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 128 | 149.53 | 148.57 | 149.63 | 3 |
-| Blender Cycles | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 128 | 2680.67 | 2672.46 | 2730.19 | 3 |
-| Mind-Ray Tier B | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 128 | 99.3 | 98.68 | 99.67 | 3 |
-| Mitsuba 3 | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 256 | 205.71 | 201.39 | 207.63 | 3 |
-| Blender Cycles | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 256 | 5001.82 | 4944.61 | 5089.9 | 3 |
-| Mind-Ray Tier B | GPU: NVIDIA GeForce RTX 4070 Laptop GPU | 256 | 103.07 | 103.06 | 108.92 | 3 |
+| Scene | Mind-Ray | Mitsuba 3 | Cycles | LuxCore |
+|-------|----------|-----------|--------|---------|
+| stress_n64 | 100.1 | 1424.1 | 2043.5 | 5041.0 |
+| stress_n128 | 103.5 | 827.2 | 2640.0 | 5045.0 |
+| stress_n256 | 96.0 | 973.7 | 4968.4 | 5037.4 |
 
----
+## Speedups vs Mind-Ray
 
-## Verification Footer
-
-| Check | Value |
-|-------|-------|
-| Engines Executed | mitsuba3, cycles, mindray_tier_b |
-| Raw Logs Created | 27 |
-| Valid Results | 9 |
-| Timestamp | 2026-01-06_13-48-06 |
-
----
-
-## Raw Data
-
-- Logs: `bench/results/raw/tier_b/`
-- Contract: `bench/contract_v2.md`
-
----
+| Engine | Geomean Slowdown |
+|--------|------------------|
+| Mind-Ray | 1.00x (baseline) |
+| Mitsuba 3 | 10.26x slower |
+| Cycles | 30.58x slower |
+| LuxCore | 50.50x slower |
 
 ## Notes
 
-- **GPU-Only Policy**: Only GPU-accelerated renderers are included in this benchmark
-- SCENE_MATCH=approx: Scene parameters approximate Mind-Ray's, not verified identical
-- Tier B includes: scene loading, BVH construction, memory allocation, rendering, output
-- Do NOT compare with Tier A numbers
----
+- Tier B = end-to-end wall clock (process start to completion)
+- GPU-only policy: CPU-only engines excluded
+- LuxCore WARM uses cached kernels; COLD includes ~2min kernel compilation
+- Mind-Ray includes DLL load + BVH build + render + output in ~100ms
+- Mitsuba3 Python import overhead varies ~800ms-1400ms
+- Cycles startup overhead varies with scene complexity
 
-## Excluded Engines
+## LuxCore Cold Start
 
-| Engine | Reason |
-|--------|--------|
-| PBRT-v4 | CPU-only (excluded by GPU-only policy) |
-| Python Reference | CPU-only (excluded by GPU-only policy) |
+First run with kernel compilation: **118.1 seconds**
+
+LuxCore compiles OpenCL kernels on first run. Subsequent WARM runs use cached kernels.

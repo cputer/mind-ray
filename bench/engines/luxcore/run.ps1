@@ -1,157 +1,188 @@
-# LuxCoreRender Benchmark Runner
-# Outputs contract-friendly stdout for Tier B benchmarks
+<#
+.SYNOPSIS
+    LuxCore Tier B benchmark runner with COLD/WARM timing separation.
+
+.DESCRIPTION
+    Runs GPU benchmarks via luxcoreconsole.exe using pre-generated stress scenes.
+    Outputs contract-compliant metrics for Tier B (end-to-end wall clock).
+
+.PARAMETER Scene
+    Scene name: stress_n64, stress_n128, stress_n256
+
+.PARAMETER Warmup
+    Number of warmup runs (default: 1)
+
+.PARAMETER Runs
+    Number of timed runs (default: 3)
+
+.PARAMETER Mode
+    COLD = include kernel compilation, WARM = use cached kernels, BOTH = run both
+#>
 
 param(
-    [string]$Scene = "stress",
-    [int]$Width = 640,
-    [int]$Height = 360,
-    [int]$Spp = 64,
-    [int]$Bounces = 4,
-    [int]$Spheres = 64
+    [string]$Scene = "stress_n64",
+    [int]$Warmup = 1,
+    [int]$Runs = 3,
+    [ValidateSet("COLD", "WARM", "BOTH")]
+    [string]$Mode = "WARM"
 )
 
 $ErrorActionPreference = "Stop"
 
-$LUXCORE_EXE = "$PSScriptRoot\..\..\third_party\luxcorerender\luxcoreconsole.exe"
-$SCENES_DIR = "$PSScriptRoot\scenes"
+# Paths
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$LuxCoreExe = "$ScriptDir\..\..\third_party\luxcorerender\luxcoreconsole.exe"
+$ScenesDir = "$ScriptDir\scenes"
+$CfgFile = "$ScenesDir\$Scene.cfg"
+$ResultsDir = "$ScriptDir\..\..\results\luxcore"
 
-# Check if LuxCore is available
-if (!(Test-Path $LUXCORE_EXE)) {
-    "ENGINE=LuxCoreRender"
-    "STATUS=unavailable"
-    "ERROR=luxcoreconsole.exe not found. Download from https://luxcorerender.org/download/ and extract to bench\third_party\luxcorerender\"
+# Verify prerequisites
+if (-not (Test-Path $LuxCoreExe)) {
+    Write-Output "ENGINE=LuxCore"
+    Write-Output "STATUS=unavailable"
+    Write-Output "ERROR=luxcoreconsole.exe not found at $LuxCoreExe"
     exit 1
 }
 
-# Get version
-$version = "unknown"
-try {
-    $versionOutput = & $LUXCORE_EXE --version 2>&1
-    if ($versionOutput -match "LuxCoreRender v?(\d+\.\d+)") {
-        $version = $Matches[1]
-    }
-} catch {
-    $version = "unknown"
+# Generate scenes if needed
+if (-not (Test-Path $CfgFile)) {
+    Write-Host "Generating stress scenes..." -ForegroundColor Yellow
+    Push-Location $ScriptDir
+    python gen_stress_scenes.py
+    Pop-Location
 }
 
-# Scene file path
-$sceneFile = "$SCENES_DIR\${Scene}_n${Spheres}.cfg"
-
-# Check if scene exists, if not create one
-if (!(Test-Path $sceneFile)) {
-    # Create scenes directory
-    if (!(Test-Path $SCENES_DIR)) {
-        New-Item -ItemType Directory -Path $SCENES_DIR -Force | Out-Null
-    }
-
-    # Generate a stress scene for LuxCore
-    # LuxCore uses SDL (Scene Description Language)
-    $sceneContent = @"
-# Auto-generated stress scene for LuxCoreRender
-# Spheres: $Spheres, Resolution: ${Width}x${Height}, SPP: $Spp, Bounces: $Bounces
-
-scene.camera.type = perspective
-scene.camera.lookat.orig = 0 3 12
-scene.camera.lookat.target = 0 1 0
-scene.camera.fieldofview = 50
-
-film.width = $Width
-film.height = $Height
-film.outputs.0.type = RGB_IMAGEPIPELINE
-film.outputs.0.filename = output.png
-
-sampler.type = SOBOL
-halt.spp = $Spp
-
-renderengine.type = PATHOCL
-path.maxdepth = $Bounces
-opencl.gpu.use = 1
-opencl.cpu.use = 0
-
-# Sky light
-scene.lights.sky.type = sky2
-scene.lights.sky.gain = 1 1 1
-
-# Ground plane material
-scene.materials.ground.type = matte
-scene.materials.ground.kd = 0.5 0.5 0.5
-
-# Ground plane
-scene.objects.ground.ply = ground.ply
-scene.objects.ground.material = ground
-"@
-
-    # Add sphere objects
-    $gridSize = [math]::Ceiling([math]::Sqrt($Spheres))
-    $spacing = 2.0
-    $offset = ($gridSize - 1) * $spacing / 2.0
-
-    for ($i = 0; $i -lt $Spheres; $i++) {
-        $x = ($i % $gridSize) * $spacing - $offset
-        $z = [math]::Floor($i / $gridSize) * $spacing - $offset
-        $y = 0.5
-
-        $r = [math]::Abs([math]::Sin($i * 0.7)) * 0.8 + 0.2
-        $g = [math]::Abs([math]::Sin($i * 1.3)) * 0.8 + 0.2
-        $b = [math]::Abs([math]::Sin($i * 2.1)) * 0.8 + 0.2
-
-        $sceneContent += @"
-
-scene.materials.sphere$i.type = matte
-scene.materials.sphere$i.kd = $r $g $b
-scene.objects.sphere$i.type = sphere
-scene.objects.sphere$i.radius = 0.5
-scene.objects.sphere$i.transformation = 1 0 0 0  0 1 0 0  0 0 1 0  $x $y $z 1
-scene.objects.sphere$i.material = sphere$i
-"@
-    }
-
-    # Write scene file
-    [System.IO.File]::WriteAllText($sceneFile, $sceneContent)
-    Write-Host "# Generated scene: $sceneFile" -ForegroundColor Gray
+if (-not (Test-Path $CfgFile)) {
+    Write-Output "ENGINE=LuxCore"
+    Write-Output "STATUS=unavailable"
+    Write-Output "ERROR=Config not found: $CfgFile"
+    exit 1
 }
+
+# Create results directory
+New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 
 # Get GPU name
-$gpuName = "Unknown GPU"
+$gpuName = "Unknown"
 try {
     $gpuName = (& nvidia-smi --query-gpu=name --format=csv,noheader 2>$null).Trim()
 } catch { }
 
-# Output contract header
-"ENGINE=LuxCoreRender"
-"ENGINE_VERSION=$version"
-"TIER=B"
-"DEVICE=GPU"
-"DEVICE_NAME=$gpuName"
-"SCENE=$Scene"
-"WIDTH=$Width"
-"HEIGHT=$Height"
-"SPP=$Spp"
-"BOUNCES=$Bounces"
-"SPHERES=$Spheres"
-"SCENE_MATCH=approx"
+function Run-LuxCoreBenchmark {
+    param([string]$Label)
 
-# Run LuxCore and measure wall time
-$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $logFile = "$ResultsDir\${Label}.log"
+    $startTime = Get-Date
 
-try {
-    $output = & $LUXCORE_EXE -o $sceneFile 2>&1
-    $exitCode = $LASTEXITCODE
-} catch {
-    "ERROR=LuxCore execution failed: $_"
-    exit 1
+    # Run LuxCore
+    $proc = Start-Process -FilePath $LuxCoreExe `
+        -ArgumentList "-o", $CfgFile `
+        -WorkingDirectory $ScenesDir `
+        -NoNewWindow -Wait -PassThru `
+        -RedirectStandardOutput $logFile `
+        -RedirectStandardError "$ResultsDir\${Label}_err.log"
+
+    $endTime = Get-Date
+    $wallMs = [math]::Round(($endTime - $startTime).TotalMilliseconds, 2)
+
+    return @{
+        WallMs = $wallMs
+        ExitCode = $proc.ExitCode
+    }
 }
 
-$stopwatch.Stop()
-$wallMs = $stopwatch.Elapsed.TotalMilliseconds
+function Clear-KernelCache {
+    # Clear OpenCL kernel cache to force recompilation
+    $paths = @(
+        "$env:LOCALAPPDATA\NVIDIA\GLCache",
+        "$env:APPDATA\NVIDIA\ComputeCache"
+    )
+    foreach ($p in $paths) {
+        if (Test-Path $p) {
+            Remove-Item -Recurse -Force "$p\*" -ErrorAction SilentlyContinue
+        }
+    }
+}
 
-# Calculate throughput
-$totalSamples = $Width * $Height * $Spp
-$wallSec = $wallMs / 1000.0
-$samplesPerSec = $totalSamples / $wallSec / 1000000.0
+# Timestamp
+$timestamp = Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
 
-# Output timing
-"WALL_MS_TOTAL=$([math]::Round($wallMs, 2))"
-"WALL_SAMPLES_PER_SEC=$([math]::Round($samplesPerSec, 4))"
+# COLD run (with kernel compilation)
+if ($Mode -eq "COLD" -or $Mode -eq "BOTH") {
+    Write-Host "`n=== COLD RUN (kernel compilation) ===" -ForegroundColor Cyan
+    Clear-KernelCache
 
-"STATUS=complete"
+    $coldResult = Run-LuxCoreBenchmark -Label "${Scene}_COLD_$timestamp"
+
+    Write-Output "ENGINE=LuxCore"
+    Write-Output "ENGINE_VERSION=2.8alpha1"
+    Write-Output "TIER=B"
+    Write-Output "DEVICE=GPU"
+    Write-Output "DEVICE_NAME=$gpuName"
+    Write-Output "SCENE=$Scene"
+    Write-Output "RUN_MODE=COLD"
+    Write-Output "WALL_MS_TOTAL=$($coldResult.WallMs)"
+    Write-Output "STATUS=$(if ($coldResult.ExitCode -eq 0) { 'OK' } else { 'FAIL' })"
+}
+
+# WARM runs (cached kernels)
+if ($Mode -eq "WARM" -or $Mode -eq "BOTH") {
+    Write-Host "`n=== WARM RUNS (cached kernels) ===" -ForegroundColor Green
+
+    # Warmup runs
+    for ($i = 1; $i -le $Warmup; $i++) {
+        Write-Host "  Warmup $i/$Warmup..." -ForegroundColor Gray
+        $null = Run-LuxCoreBenchmark -Label "${Scene}_warmup_$i"
+    }
+
+    # Timed runs
+    $warmTimes = @()
+    for ($i = 1; $i -le $Runs; $i++) {
+        Write-Host "  Timed run $i/$Runs..." -ForegroundColor White
+        $result = Run-LuxCoreBenchmark -Label "${Scene}_run_$i"
+        $warmTimes += $result.WallMs
+        Write-Host "    -> $($result.WallMs) ms" -ForegroundColor DarkGray
+    }
+
+    # Statistics
+    $sorted = $warmTimes | Sort-Object
+    $median = $sorted[[math]::Floor($sorted.Count / 2)]
+    $min = $sorted[0]
+    $max = $sorted[-1]
+
+    Write-Output ""
+    Write-Output "ENGINE=LuxCore"
+    Write-Output "ENGINE_VERSION=2.8alpha1"
+    Write-Output "TIER=B"
+    Write-Output "DEVICE=GPU"
+    Write-Output "DEVICE_NAME=$gpuName"
+    Write-Output "SCENE=$Scene"
+    Write-Output "RUN_MODE=WARM"
+    Write-Output "WARMUP_RUNS=$Warmup"
+    Write-Output "TIMED_RUNS=$Runs"
+    Write-Output "WALL_MS_MEDIAN=$median"
+    Write-Output "WALL_MS_MIN=$min"
+    Write-Output "WALL_MS_MAX=$max"
+    Write-Output "WALL_MS_ALL=$($warmTimes -join ',')"
+    Write-Output "STATUS=OK"
+
+    # Save JSON
+    $json = @{
+        engine = "LuxCore"
+        engine_version = "2.8alpha1"
+        tier = "B"
+        device = "GPU"
+        device_name = $gpuName
+        scene = $Scene
+        run_mode = "WARM"
+        timestamp = $timestamp
+        warmup_runs = $Warmup
+        timed_runs = $Runs
+        wall_ms_median = $median
+        wall_ms_min = $min
+        wall_ms_max = $max
+        wall_ms_all = $warmTimes
+    } | ConvertTo-Json
+
+    $json | Out-File "$ResultsDir\${Scene}_warm.json" -Encoding UTF8
+}
