@@ -113,9 +113,9 @@ See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 <!-- AUTO_ENGINE_MATRIX_START -->
 | Engine | Tier | Device | Status | Source |
 |--------|------|--------|--------|--------|
-| Mind-Ray CUDA | A | GPU | Ready | - |
-| Mind-Ray Tier B | B | GPU | Ready | - |
-| Mind-Ray Tier BP | BP | GPU | Ready | - |
+| Mind-Ray CUDA | A | GPU | Ready | [This repo](https://github.com/cputer/mind-ray) |
+| Mind-Ray Tier B | B | GPU | Ready | [This repo](https://github.com/cputer/mind-ray) |
+| Mind-Ray Tier BP | BP | GPU | Ready | [This repo](https://github.com/cputer/mind-ray) |
 | Mitsuba 3 | B, BP | GPU | Ready | [Link](https://github.com/mitsuba-renderer/mitsuba3) |
 | Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
 | NVIDIA Falcor | B | GPU | Ready | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
