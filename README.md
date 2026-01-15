@@ -120,8 +120,8 @@ See [`bench/contract_v2.md`](bench/contract_v2.md) for full tier definitions.
 | Blender Cycles | B | GPU | Ready | [Link](https://www.blender.org/download/) |
 | NVIDIA Falcor | B | GPU | Ready | [Link](https://github.com/NVIDIAGameWorks/Falcor) |
 | LuxCoreRender | B | GPU | Ready | [Link](https://luxcorerender.org/download/) |
-| OptiX SDK | A | GPU | Ready | - |
-| CUDA Reference | A | GPU | Ready | - |
+| OptiX SDK | A | GPU | Ready | [Link](https://developer.nvidia.com/optix) |
+| CUDA Reference | A | GPU | Ready | [Link](https://developer.nvidia.com/cuda-toolkit) |
 | PBRT-v4 | B | GPU | Blocked | [Link](https://github.com/mmp/pbrt-v4) |
 
 **GPU-Only Policy**: Tier B and BP include only GPU-accelerated engines. Blocked/pending engines excluded from leaderboards.
