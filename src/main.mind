@@ -20,7 +20,7 @@
 //   - gpu: CUDA GPU backend via FFI (requires mindray_cuda.dll)
 //   - auto: Auto-detect GPU, fallback to CPU
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 import vec3;

@@ -10,7 +10,7 @@
 //
 // Build: nvcc -O3 -shared -o mindray_cuda.dll mindray_cuda.cu -Xcompiler "/MD"
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 #include <cuda_runtime.h>

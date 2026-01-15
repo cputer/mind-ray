@@ -14,7 +14,7 @@
 // - Exponential/logarithmic: ~6 decimal places in normal range
 // - Square root: ~7 decimal places via Newton-Raphson refinement
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

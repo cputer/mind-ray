@@ -13,7 +13,7 @@
 // Algorithm: xorshift32 by George Marsaglia (2003)
 // Period: 2^32 - 1 (all non-zero 32-bit integers)
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

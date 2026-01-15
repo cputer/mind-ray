@@ -10,7 +10,7 @@
 // The direction is expected to be normalized (unit length) for most
 // operations, though some algorithms work with unnormalized directions.
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

@@ -27,7 +27,7 @@
 //   All operations return BackendResult<T> with detailed error codes.
 //   Use BackendError variants to handle specific failure modes.
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

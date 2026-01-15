@@ -23,7 +23,7 @@
 // - No dynamic allocations
 // - Pure functions (no side effects)
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

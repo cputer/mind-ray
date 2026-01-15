@@ -20,7 +20,7 @@
 // Thread Safety: All functions are pure (no global state mutation) and can
 // be safely called from multiple threads with independent RNG states.
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================

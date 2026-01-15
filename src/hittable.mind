@@ -14,7 +14,7 @@
 // The intersection algorithms use analytical solutions for efficiency.
 // All primitives support the same interface for polymorphic scene traversal.
 //
-// Author: Mind Ray Contributors
+// Author: STARGA Inc.
 // License: MIT
 
 // =============================================================================
